@@ -19,8 +19,12 @@ export function CameraController() {
   const direction = useRef(new THREE.Vector3());
 
   useEffect(() => {
+    const isTyping = () => {
+      const el = document.activeElement;
+      return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || (el as HTMLElement).isContentEditable);
+    };
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (cameraMode !== "spaceship") return;
+      if (cameraMode !== "spaceship" || isTyping()) return;
       switch (e.code) {
         case "ArrowUp":
         case "KeyW": keys.current.forward = true; break;

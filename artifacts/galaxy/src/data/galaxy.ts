@@ -76,3 +76,96 @@ export const papersByDomain: Record<string, Paper[]> = galaxyData.domains.reduce
 export function getDomain(id: string): Domain | undefined {
   return galaxyData.domains.find((d) => d.id === id);
 }
+
+const _years = galaxyData.papers
+  .map((p) => p.year)
+  .filter((y): y is number => y != null);
+
+export const yearRange = {
+  min: _years.length ? Math.min(..._years) : 0,
+  max: _years.length ? Math.max(..._years) : 0,
+};
+
+export const maxCitations = galaxyData.papers.reduce(
+  (m, p) => Math.max(m, p.citations),
+  0,
+);
+
+export interface Filters {
+  minYear: number | null;
+  maxYear: number | null;
+  domainId: string | null;
+  minCitations: number;
+}
+
+export const defaultFilters: Filters = {
+  minYear: null,
+  maxYear: null,
+  domainId: null,
+  minCitations: 0,
+};
+
+export function isFiltersActive(f: Filters): boolean {
+  return (
+    f.minYear != null ||
+    f.maxYear != null ||
+    f.domainId != null ||
+    f.minCitations > 0
+  );
+}
+
+export function paperMatchesFilters(p: Paper, f: Filters): boolean {
+  if (f.domainId && p.domainId !== f.domainId) return false;
+  if (f.minCitations > 0 && p.citations < f.minCitations) return false;
+  if (f.minYear != null && (p.year == null || p.year < f.minYear)) return false;
+  if (f.maxYear != null && (p.year == null || p.year > f.maxYear)) return false;
+  return true;
+}
+
+export interface SearchResult {
+  type: "domain" | "paper";
+  id: string;
+  title: string;
+  subtitle: string;
+}
+
+export function searchGalaxy(query: string, limit = 8): SearchResult[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+
+  const domainHits: SearchResult[] = galaxyData.domains
+    .filter(
+      (d) =>
+        d.name.toLowerCase().includes(q) || d.field.toLowerCase().includes(q),
+    )
+    .map((d) => ({
+      type: "domain" as const,
+      id: d.id,
+      title: d.name,
+      subtitle: `Domain · ${d.paperCount} papers`,
+    }));
+
+  const paperHits: SearchResult[] = galaxyData.papers
+    .filter((p) => {
+      if (p.title.toLowerCase().includes(q)) return true;
+      if (p.year != null && String(p.year).includes(q)) return true;
+      if (p.domainName && p.domainName.toLowerCase().includes(q)) return true;
+      if (p.coAuthors.some((a) => a.toLowerCase().includes(q))) return true;
+      return false;
+    })
+    .sort((a, b) => b.citations - a.citations)
+    .map((p) => ({
+      type: "paper" as const,
+      id: p.id,
+      title: p.title,
+      subtitle: [p.year, `${p.citations} citations`, p.domainName]
+        .filter(Boolean)
+        .join(" · "),
+    }));
+
+  return [...domainHits, ...paperHits].slice(0, limit);
+}
+
+export function countMatchingPapers(f: Filters): number {
+  return galaxyData.papers.filter((p) => paperMatchesFilters(p, f)).length;
+}

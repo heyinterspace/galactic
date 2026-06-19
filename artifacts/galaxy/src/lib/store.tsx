@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { Filters, defaultFilters } from '@/data/galaxy';
 
 export type CameraMode = 'god' | 'spaceship';
 
@@ -24,6 +25,9 @@ interface AppState {
   setHoveredObject: (obj: HoveredObject) => void;
   galaxyTilt: number;
   setGalaxyTilt: (val: number) => void;
+  filters: Filters;
+  setFilters: (patch: Partial<Filters>) => void;
+  resetFilters: () => void;
 }
 
 const AppStateContext = createContext<AppState | undefined>(undefined);
@@ -34,6 +38,15 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [selectedObject, setSelectedObject] = useState<SelectedObject>(null);
   const [hoveredObject, setHoveredObject] = useState<HoveredObject>(null);
   const [galaxyTilt, setGalaxyTilt] = useState<number>(0);
+  const [filters, setFiltersState] = useState<Filters>(defaultFilters);
+
+  const setFilters = useCallback((patch: Partial<Filters>) => {
+    setFiltersState((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const resetFilters = useCallback(() => {
+    setFiltersState(defaultFilters);
+  }, []);
 
   return (
     <AppStateContext.Provider
@@ -48,6 +61,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setHoveredObject,
         galaxyTilt,
         setGalaxyTilt,
+        filters,
+        setFilters,
+        resetFilters,
       }}
     >
       {children}

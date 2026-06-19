@@ -2,7 +2,7 @@ import React, { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { galaxyData, papersByDomain } from "@/data/galaxy";
+import { galaxyData, papersByDomain, isFiltersActive, paperMatchesFilters } from "@/data/galaxy";
 import { getStellarColor } from "@/lib/colors";
 import { useAppState } from "@/lib/store";
 
@@ -96,7 +96,18 @@ function ellipseR(a: number, e: number, theta: number) {
 }
 
 export function GalaxySystem() {
-  const { galaxyTilt, selectedObject, setHoveredObject, setSelectedObject } = useAppState();
+  const { galaxyTilt, selectedObject, setHoveredObject, setSelectedObject, filters } = useAppState();
+
+  const filtersActive = isFiltersActive(filters);
+
+  const matchingIds = useMemo(() => {
+    if (!filtersActive) return null;
+    const s = new Set<string>();
+    for (const p of galaxyData.papers) {
+      if (paperMatchesFilters(p, filters)) s.add(p.id);
+    }
+    return s;
+  }, [filters, filtersActive]);
 
   const textures = useTexture([
     ...PLANET_TEXTURES.map(TEX),
@@ -146,6 +157,8 @@ export function GalaxySystem() {
           selectedObject={selectedObject}
           setHoveredObject={setHoveredObject}
           setSelectedObject={setSelectedObject}
+          filtersActive={filtersActive}
+          matchingIds={matchingIds}
         />
       ))}
     </group>
@@ -165,6 +178,8 @@ interface SolarSystemProps {
   selectedObject: { type: string; id: string } | null;
   setHoveredObject: (o: any) => void;
   setSelectedObject: (o: any) => void;
+  filtersActive: boolean;
+  matchingIds: Set<string> | null;
 }
 
 const SolarSystem = React.memo(function SolarSystem({
@@ -180,9 +195,14 @@ const SolarSystem = React.memo(function SolarSystem({
   selectedObject,
   setHoveredObject,
   setSelectedObject,
+  filtersActive,
+  matchingIds,
 }: SolarSystemProps) {
   const color = useMemo(() => getStellarColor(index), [index]);
   const papers = papersByDomain[domainId] || [];
+
+  const domainHasMatch = !filtersActive || !matchingIds || papers.some((p) => matchingIds.has(p.id));
+  const sunDimmed = filtersActive && !domainHasMatch;
 
   return (
     <group position={position} ref={(el) => { if (el) sunRefs[domainId] = el; }}>
@@ -190,24 +210,33 @@ const SolarSystem = React.memo(function SolarSystem({
         radius={sunRadius}
         color={color}
         tex={sunTex}
+        dimmed={sunDimmed}
         onSelect={() => setSelectedObject({ type: "sun", id: domainId })}
         onOver={() => setHoveredObject({ type: "sun", id: domainId, name: domainName })}
         onOut={() => setHoveredObject(null)}
       />
-      {papers.map((p) => (
-        <PlanetSystem
-          key={p.id}
-          paperId={p.id}
-          paperTitle={p.title}
-          coAuthors={p.coAuthors}
-          planetTex={planetTex}
-          moonTex={moonTex}
-          ringTex={ringTex}
-          isSelected={selectedObject?.type === "planet" && selectedObject.id === p.id}
-          setHoveredObject={setHoveredObject}
-          setSelectedObject={setSelectedObject}
-        />
-      ))}
+      {papers.map((p) => {
+        const isSelected = selectedObject?.type === "planet" && selectedObject.id === p.id;
+        const dimmed = filtersActive && !!matchingIds && !matchingIds.has(p.id) && !isSelected;
+        const highlighted = filtersActive && !dimmed;
+        return (
+          <PlanetSystem
+            key={p.id}
+            paperId={p.id}
+            paperTitle={p.title}
+            coAuthors={p.coAuthors}
+            color={color}
+            planetTex={planetTex}
+            moonTex={moonTex}
+            ringTex={ringTex}
+            isSelected={isSelected}
+            dimmed={dimmed}
+            highlighted={highlighted}
+            setHoveredObject={setHoveredObject}
+            setSelectedObject={setSelectedObject}
+          />
+        );
+      })}
     </group>
   );
 });
@@ -216,6 +245,7 @@ function Sun({
   radius,
   color,
   tex,
+  dimmed,
   onSelect,
   onOver,
   onOut,
@@ -223,6 +253,7 @@ function Sun({
   radius: number;
   color: THREE.Color;
   tex: THREE.Texture;
+  dimmed: boolean;
   onSelect: () => void;
   onOver: () => void;
   onOut: () => void;
@@ -244,18 +275,20 @@ function Sun({
           map={tex}
           emissiveMap={tex}
           emissive={color}
-          emissiveIntensity={1.5}
+          emissiveIntensity={dimmed ? 0.15 : 1.5}
           color={color}
+          transparent={dimmed}
+          opacity={dimmed ? 0.25 : 1}
           toneMapped={false}
         />
       </mesh>
-      <pointLight color={color} intensity={4} distance={radius * 60} decay={1.5} />
+      <pointLight color={color} intensity={dimmed ? 0.4 : 4} distance={radius * 60} decay={1.5} />
       <mesh scale={1.22}>
         <sphereGeometry args={[radius, 32, 32]} />
         <meshBasicMaterial
           color={color}
           transparent
-          opacity={0.16}
+          opacity={dimmed ? 0.03 : 0.16}
           side={THREE.BackSide}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
@@ -270,10 +303,13 @@ interface PlanetSystemProps {
   paperId: string;
   paperTitle: string;
   coAuthors: string[];
+  color: THREE.Color;
   planetTex: THREE.Texture[];
   moonTex: THREE.Texture;
   ringTex: THREE.Texture;
   isSelected: boolean;
+  dimmed: boolean;
+  highlighted: boolean;
   setHoveredObject: (o: any) => void;
   setSelectedObject: (o: any) => void;
 }
@@ -282,10 +318,13 @@ const PlanetSystem = React.memo(function PlanetSystem({
   paperId,
   paperTitle,
   coAuthors,
+  color,
   planetTex,
   moonTex,
   ringTex,
   isSelected,
+  dimmed,
+  highlighted,
   setHoveredObject,
   setSelectedObject,
 }: PlanetSystemProps) {
@@ -316,11 +355,19 @@ const PlanetSystem = React.memo(function PlanetSystem({
         onPointerOut={() => { setHoveredObject(null); document.body.style.cursor = "auto"; }}
       >
         <sphereGeometry args={[o.planetRadius, 32, 32]} />
-        <meshStandardMaterial map={tex} roughness={0.9} metalness={0.0} />
+        <meshStandardMaterial
+          map={tex}
+          roughness={0.9}
+          metalness={0.0}
+          emissive={color}
+          emissiveIntensity={highlighted ? 0.5 : 0}
+          transparent={dimmed}
+          opacity={dimmed ? 0.12 : 1}
+        />
         {isSaturn && (
           <mesh rotation={[-Math.PI / 2.3, 0, 0]}>
             <ringGeometry args={[o.planetRadius * 1.4, o.planetRadius * 2.4, 64]} />
-            <meshBasicMaterial map={ringTex} side={THREE.DoubleSide} transparent opacity={0.85} />
+            <meshBasicMaterial map={ringTex} side={THREE.DoubleSide} transparent opacity={dimmed ? 0.1 : 0.85} />
           </mesh>
         )}
         {isSelected &&
