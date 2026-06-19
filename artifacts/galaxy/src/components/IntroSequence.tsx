@@ -4,7 +4,7 @@ import { galaxyData } from "@/data/galaxy";
 import { useEffect, useState } from "react";
 
 export function IntroSequence() {
-  const { setIntroFinished } = useAppState();
+  const { setIntroFinished, startTour } = useAppState();
   const [stage, setStage] = useState(0);
 
   useEffect(() => {
@@ -67,15 +67,28 @@ export function IntroSequence() {
           <IntroStat value={String(galaxyData.stats.yearsActive)} label="Years Active" />
         </motion.div>
 
-        <motion.button
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: stage >= 3 ? 1 : 0 }}
           transition={{ duration: 1 }}
-          onClick={() => setIntroFinished(true)}
-          className="glass-panel glass-panel-interactive mt-16 px-8 py-3 bg-accent text-accent-foreground font-display text-sm uppercase tracking-[0.2em]"
+          className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          Ad Astra
-        </motion.button>
+          <button
+            onClick={() => {
+              setIntroFinished(true);
+              startTour();
+            }}
+            className="glass-panel glass-panel-interactive px-8 py-3 bg-accent text-accent-foreground font-display text-sm uppercase tracking-[0.2em]"
+          >
+            Take the Tour
+          </button>
+          <button
+            onClick={() => setIntroFinished(true)}
+            className="glass-panel glass-panel-interactive px-8 py-3 font-display text-sm uppercase tracking-[0.2em] text-ink"
+          >
+            Ad Astra
+          </button>
+        </motion.div>
       </div>
     </motion.div>
   );

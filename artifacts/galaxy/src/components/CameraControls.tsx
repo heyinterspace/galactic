@@ -4,11 +4,12 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { useAppState } from "@/lib/store";
 import { planetRefs, sunRefs, planetOrbits, sunRadii } from "./GalaxySystem";
+import { tourStops } from "@/lib/tour";
 
 const HOME_POS = new THREE.Vector3(0, 1100, 1700);
 
 export function CameraController() {
-  const { cameraMode, selectedObject } = useAppState();
+  const { cameraMode, selectedObject, tourActive, tourStopIndex } = useAppState();
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
   const orbitRef = useRef<any>(null);
@@ -126,6 +127,47 @@ export function CameraController() {
   }, [cameraMode, gl]);
 
   useFrame((state, delta) => {
+    if (tourActive) {
+      const stop = tourStops[tourStopIndex];
+      const worldPos = new THREE.Vector3();
+      let hasTarget = false;
+      let offset = new THREE.Vector3(0, 40, 110);
+
+      if (stop && stop.target.type !== "overview") {
+        if (stop.target.type === "sun") {
+          const sun = sunRefs[stop.target.id];
+          if (sun) {
+            sun.getWorldPosition(worldPos);
+            hasTarget = worldPos.lengthSq() > 0;
+          }
+          const r = sunRadii[stop.target.id] || 20;
+          offset = new THREE.Vector3(0, r * 4 + 30, r * 9 + 60);
+        } else {
+          const planet = planetRefs[stop.target.id];
+          if (planet) {
+            planet.getWorldPosition(worldPos);
+            hasTarget = worldPos.lengthSq() > 0;
+          }
+          const pr = planetOrbits[stop.target.id]?.planetRadius || 1;
+          offset = new THREE.Vector3(0, pr * 6 + 8, pr * 16 + 16);
+        }
+      }
+
+      if (hasTarget) {
+        targetLookAt.current.copy(worldPos);
+        targetPosition.current.copy(worldPos).add(offset);
+      } else {
+        targetLookAt.current.set(0, 0, 0);
+        targetPosition.current.copy(HOME_POS);
+      }
+
+      state.camera.position.lerp(targetPosition.current, delta * 1.5);
+      if (orbitRef.current) {
+        orbitRef.current.target.lerp(targetLookAt.current, delta * 1.5);
+      }
+      return;
+    }
+
     if (cameraMode === "god") {
       const orbit = orbitRef.current;
       const worldPos = new THREE.Vector3();
@@ -192,7 +234,7 @@ export function CameraController() {
     }
   });
 
-  if (cameraMode === "spaceship") {
+  if (cameraMode === "spaceship" && !tourActive) {
     return null;
   }
 
@@ -200,6 +242,7 @@ export function CameraController() {
     <OrbitControls
       ref={orbitRef}
       makeDefault
+      enabled={!tourActive}
       enableDamping
       dampingFactor={0.05}
       maxDistance={9000}

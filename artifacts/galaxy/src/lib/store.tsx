@@ -30,6 +30,11 @@ interface AppState {
   filters: Filters;
   setFilters: (patch: Partial<Filters>) => void;
   resetFilters: () => void;
+  tourActive: boolean;
+  tourStopIndex: number;
+  startTour: () => void;
+  endTour: () => void;
+  setTourStopIndex: (i: number) => void;
 }
 
 const AppStateContext = createContext<AppState | undefined>(undefined);
@@ -51,6 +56,20 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setFiltersState(defaultFilters);
   }, []);
 
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStopIndex, setTourStopIndex] = useState(0);
+
+  const startTour = () => {
+    setSelectedObject(null);
+    setCameraMode('god');
+    setTourStopIndex(0);
+    setTourActive(true);
+  };
+
+  const endTour = () => {
+    setTourActive(false);
+  };
+
   return (
     <AppStateContext.Provider
       value={{
@@ -69,6 +88,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         filters,
         setFilters,
         resetFilters,
+        tourActive,
+        tourStopIndex,
+        startTour,
+        endTour,
+        setTourStopIndex,
       }}
     >
       {children}
