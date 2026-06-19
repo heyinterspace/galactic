@@ -34,6 +34,10 @@ const searchIndex: { type: "sun" | "planet"; id: string; title: string; subtitle
   })),
 ];
 
+function compactNumber(n: number): string {
+  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+}
+
 export function CommandBar() {
   const {
     cameraMode,
@@ -312,10 +316,6 @@ export function CommandBar() {
       </motion.div>
     </div>
   );
-}
-
-function compactNumber(n: number): string {
-  return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
 }
 
 function Chip({
