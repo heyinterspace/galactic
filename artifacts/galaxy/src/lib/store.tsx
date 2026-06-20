@@ -20,6 +20,7 @@ interface AppState {
   introStarted: boolean;
   setIntroStarted: (val: boolean) => void;
   replayIntro: () => void;
+  forgetIntro: () => void;
   introProgressRef: React.MutableRefObject<number>;
   cameraMode: CameraMode;
   setCameraMode: (mode: CameraMode) => void;
@@ -61,6 +62,14 @@ function writeIntroSeen() {
   }
 }
 
+function clearIntroSeen() {
+  try {
+    localStorage.removeItem(INTRO_SEEN_KEY);
+  } catch {
+    // ignore (private mode / storage disabled)
+  }
+}
+
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const introSeen = readIntroSeen();
   const [introFinished, setIntroFinishedState] = useState(introSeen);
@@ -73,6 +82,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const replayIntro = useCallback(() => {
+    introProgressRef.current = 0;
+    setIntroStarted(false);
+    setIntroFinishedState(false);
+  }, []);
+
+  const forgetIntro = useCallback(() => {
+    clearIntroSeen();
     introProgressRef.current = 0;
     setIntroStarted(false);
     setIntroFinishedState(false);
@@ -114,6 +130,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         introStarted,
         setIntroStarted,
         replayIntro,
+        forgetIntro,
         introProgressRef,
         cameraMode,
         setCameraMode,
