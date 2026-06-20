@@ -40,6 +40,8 @@ interface AppState {
   startTour: () => void;
   endTour: () => void;
   setTourStopIndex: (i: number) => void;
+  infoOpen: boolean;
+  setInfoOpen: (val: boolean) => void;
 }
 
 const AppStateContext = createContext<AppState | undefined>(undefined);
@@ -110,6 +112,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const [tourActive, setTourActive] = useState(false);
   const [tourStopIndex, setTourStopIndex] = useState(0);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const startTour = () => {
     setSelectedObject(null);
@@ -150,6 +153,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         startTour,
         endTour,
         setTourStopIndex,
+        infoOpen,
+        setInfoOpen,
       }}
     >
       {children}
