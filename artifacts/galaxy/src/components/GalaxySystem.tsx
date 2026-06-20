@@ -349,7 +349,9 @@ function Sun({
         </mesh>
       )}
 
-      <pointLight color={color} intensity={dimmed ? 0.4 : 5.5} distance={radius * 90} decay={1.4} />
+      {/* decay=0 is required: at this scene scale (planets 50-200+ units out)
+          any decay >= 1 makes the sun light effectively zero and planets go black. */}
+      <pointLight color={color} intensity={dimmed ? 0.15 : 2.0} distance={radius * 140} decay={0} />
 
       {/* Inner corona */}
       <mesh scale={1.18}>

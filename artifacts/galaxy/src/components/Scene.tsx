@@ -35,9 +35,10 @@ export function Scene() {
       >
         <color attach="background" args={["#03030a"]} />
 
-        {/* Low fill so the sun pointLights carve dramatic day/night terminators */}
-        <ambientLight intensity={0.16} />
-        <hemisphereLight args={["#2a3050", "#070710", 0.22]} />
+        {/* Low fill so the sun pointLights (decay=0) carve day/night terminators,
+            but enough floor that dark sides keep visible texture instead of going black */}
+        <ambientLight intensity={0.32} />
+        <hemisphereLight args={["#2a3050", "#070710", 0.3]} />
 
         <Suspense fallback={null}>
           <Background />
