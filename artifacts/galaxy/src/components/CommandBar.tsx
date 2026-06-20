@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Orbit, Compass, Sun, Globe2, X, Filter } from "lucide-react";
+import { Search, Sun, Globe2, X, Filter } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import {
   galaxyData,
@@ -40,7 +40,6 @@ function compactNumber(n: number): string {
 
 export function CommandBar() {
   const {
-    cameraMode,
     setCameraMode,
     setSelectedObject,
     setSearchActive,
@@ -262,18 +261,6 @@ export function CommandBar() {
               <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-accent ring-2 ring-black" />
             )}
           </button>
-          <ModeButton
-            active={cameraMode === "god"}
-            onClick={() => setCameraMode("god")}
-            icon={<Orbit size={15} />}
-            label="Orbit"
-          />
-          <ModeButton
-            active={cameraMode === "spaceship"}
-            onClick={() => setCameraMode("spaceship")}
-            icon={<Compass size={15} />}
-            label="Fly"
-          />
         </div>
       </motion.div>
     </div>
@@ -307,29 +294,5 @@ function Stat({ label, value }: { label: string; value: string }) {
       <span className="font-mono text-sm leading-none text-ink">{value}</span>
       <span className="mt-1 font-mono text-[9px] uppercase tracking-widest text-ink-dim">{label}</span>
     </div>
-  );
-}
-
-function ModeButton({
-  active,
-  onClick,
-  icon,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1.5 h-11 md:h-9 px-3 border-2 border-edge font-display text-xs uppercase tracking-wider transition-all ${
-        active ? "bg-accent text-accent-foreground" : "bg-white/5 text-ink hover:bg-white/10"
-      }`}
-    >
-      {icon}
-      <span className="hidden sm:inline">{label}</span>
-    </button>
   );
 }

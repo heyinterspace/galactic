@@ -11,7 +11,7 @@ import { InfoDrawer } from "./InfoDrawer";
 import { galaxyData } from "@/data/galaxy";
 import { presence } from "@/lib/presence";
 import { useSyncExternalStore } from "react";
-import { Compass, Rewind, Info } from "lucide-react";
+import { Compass, Rewind, Info, Orbit } from "lucide-react";
 
 export function Overlay() {
   const { introFinished, selectedObject, hoveredObject, searchActive, tourActive } = useAppState();
@@ -94,6 +94,7 @@ function Header() {
         <div className="flex items-center gap-3">
           <h1 className="pointer-events-none text-3xl font-title font-bold tracking-tight text-ink">Galactic</h1>
           <InfoButton />
+          <ModeToggle />
         </div>
         <p className="pointer-events-none text-ink-dim font-mono text-[11px] mt-1 uppercase tracking-widest">
           A Journey of Scientific Exploration · {galaxyData.author.name}
@@ -142,9 +143,57 @@ function InfoButton() {
       onClick={() => setInfoOpen(true)}
       aria-label="About this visualization"
       title="About this visualization"
-      className="glass-panel glass-panel-interactive flex items-center justify-center p-2 text-ink pointer-events-auto"
+      className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
     >
       <Info size={16} />
+      Info
+    </button>
+  );
+}
+
+function ModeToggle() {
+  const { cameraMode, setCameraMode } = useAppState();
+
+  return (
+    <div className="flex items-center gap-2">
+      <ModeButton
+        active={cameraMode === "god"}
+        onClick={() => setCameraMode("god")}
+        icon={<Orbit size={14} />}
+        label="Orbit"
+      />
+      <ModeButton
+        active={cameraMode === "spaceship"}
+        onClick={() => setCameraMode("spaceship")}
+        icon={<Compass size={14} />}
+        label="Fly"
+      />
+    </div>
+  );
+}
+
+function ModeButton({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      style={active ? { background: "var(--accent)" } : undefined}
+      className={`glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider pointer-events-auto ${
+        active ? "text-accent-foreground" : "text-ink"
+      }`}
+    >
+      {icon}
+      {label}
     </button>
   );
 }
