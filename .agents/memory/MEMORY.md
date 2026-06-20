@@ -1,2 +1,3 @@
 - [Galaxy visual language](galaxy-visual-language.md) — Structured Liquidity applies to 2D UI only; 3D scene stays photoreal with per-domain stellar colors; orbits must read as real planetary systems, not belts.
 - [R3F headless WebGL](r3f-headless-webgl.md) — screenshot sandbox has no GPU so WebGL context fails; this is expected, verify via typecheck + browser logs, not screenshots.
+- [Intro flight camera](intro-flight-camera.md) — scroll intro drives the ONE live R3F camera via a ref (introProgressRef), not state, so per-frame progress doesn't re-render global consumers.

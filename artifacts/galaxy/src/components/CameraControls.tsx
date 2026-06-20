@@ -7,9 +7,14 @@ import { planetRefs, sunRefs, planetOrbits, sunRadii } from "./GalaxySystem";
 import { tourStops } from "@/lib/tour";
 
 const HOME_POS = new THREE.Vector3(0, 1100, 1700);
+export const INTRO_START = new THREE.Vector3(0, 2600, 13000);
+
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
 
 export function CameraController() {
-  const { cameraMode, selectedObject, tourActive, tourStopIndex } = useAppState();
+  const { cameraMode, selectedObject, tourActive, tourStopIndex, introFinished, introProgressRef } = useAppState();
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
   const orbitRef = useRef<any>(null);
@@ -28,6 +33,17 @@ export function CameraController() {
     focusElapsed.current = 0;
     if (orbitRef.current) orbitRef.current.enabled = false;
   }, [cameraMode, selectedObject?.type, selectedObject?.id]);
+
+  // When the intro flight ends, hand off to god/orbit at the galaxy overview.
+  useEffect(() => {
+    if (!introFinished) return;
+    focusing.current = true;
+    focusElapsed.current = 0;
+    if (orbitRef.current) {
+      orbitRef.current.target.set(0, 0, 0);
+      orbitRef.current.enabled = false;
+    }
+  }, [introFinished]);
 
   const keys = useRef({ forward: false, backward: false, left: false, right: false });
   const velocity = useRef(new THREE.Vector3());
@@ -128,6 +144,13 @@ export function CameraController() {
   }, [cameraMode, gl]);
 
   useFrame((state, delta) => {
+    if (!introFinished) {
+      const p = easeInOutCubic(THREE.MathUtils.clamp(introProgressRef.current, 0, 1));
+      state.camera.position.copy(INTRO_START).lerp(HOME_POS, p);
+      state.camera.lookAt(0, 0, 0);
+      return;
+    }
+
     if (tourActive) {
       const stop = tourStops[tourStopIndex];
       const worldPos = new THREE.Vector3();
@@ -243,7 +266,7 @@ export function CameraController() {
     <OrbitControls
       ref={orbitRef}
       makeDefault
-      enabled={!tourActive}
+      enabled={introFinished && !tourActive}
       enableDamping
       dampingFactor={0.05}
       maxDistance={9000}

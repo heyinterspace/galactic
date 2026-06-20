@@ -4,7 +4,7 @@ import { Preload, Stars, useTexture } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { GalaxySystem } from "./GalaxySystem";
-import { CameraController } from "./CameraControls";
+import { CameraController, INTRO_START } from "./CameraControls";
 import { useAppState } from "@/lib/store";
 
 function Background() {
@@ -24,7 +24,7 @@ export function Scene() {
   return (
     <div className="absolute inset-0 z-0">
       <Canvas
-        camera={{ position: [0, 1100, 1700], fov: 55, near: 0.1, far: 60000 }}
+        camera={{ position: [INTRO_START.x, INTRO_START.y, INTRO_START.z], fov: 55, near: 0.1, far: 60000 }}
         gl={{ antialias: true, alpha: false, stencil: false }}
         dpr={[1, 1.5]}
         onPointerMissed={() => setSelectedObject(null)}

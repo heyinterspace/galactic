@@ -1,6 +1,6 @@
 import { useAppState } from "@/lib/store";
 import { AnimatePresence, motion } from "framer-motion";
-import { IntroSequence } from "./IntroSequence";
+import { ScrollIntro } from "./ScrollIntro";
 import { DetailPanel } from "./DetailPanel";
 import { CommandBar } from "./CommandBar";
 import { FilteredPapersPanel } from "./FilteredPapersPanel";
@@ -14,7 +14,7 @@ export function Overlay() {
 
   return (
     <div className="absolute inset-0 pointer-events-none z-10">
-      <AnimatePresence>{!introFinished && <IntroSequence key="intro" />}</AnimatePresence>
+      <AnimatePresence>{!introFinished && <ScrollIntro key="intro" />}</AnimatePresence>
 
       {introFinished && (
         <>
@@ -87,7 +87,7 @@ function Header() {
       <div className="pointer-events-none">
         <h1 className="text-3xl font-title font-medium italic tracking-tight text-ink">Galactic</h1>
         <p className="text-ink-dim font-mono text-[11px] mt-1 uppercase tracking-widest">
-          A Legacy of Innovation · {galaxyData.author.name}
+          A Journey of Scientific Exploration · {galaxyData.author.name}
         </p>
       </div>
       <button

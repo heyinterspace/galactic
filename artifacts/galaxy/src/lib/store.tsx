@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, ReactNode } from 'react';
 import { Filters, defaultFilters } from '@/data/galaxy';
 
 export type CameraMode = 'god' | 'spaceship';
@@ -17,6 +17,9 @@ export type HoveredObject = {
 interface AppState {
   introFinished: boolean;
   setIntroFinished: (val: boolean) => void;
+  introStarted: boolean;
+  setIntroStarted: (val: boolean) => void;
+  introProgressRef: React.MutableRefObject<number>;
   cameraMode: CameraMode;
   setCameraMode: (mode: CameraMode) => void;
   selectedObject: SelectedObject;
@@ -41,6 +44,8 @@ const AppStateContext = createContext<AppState | undefined>(undefined);
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [introFinished, setIntroFinished] = useState(false);
+  const [introStarted, setIntroStarted] = useState(false);
+  const introProgressRef = useRef(0);
   const [cameraMode, setCameraMode] = useState<CameraMode>('god');
   const [selectedObject, setSelectedObject] = useState<SelectedObject>(null);
   const [hoveredObject, setHoveredObject] = useState<HoveredObject>(null);
@@ -75,6 +80,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       value={{
         introFinished,
         setIntroFinished,
+        introStarted,
+        setIntroStarted,
+        introProgressRef,
         cameraMode,
         setCameraMode,
         selectedObject,
