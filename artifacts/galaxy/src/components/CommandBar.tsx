@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Sun, Globe2, X, Filter } from "lucide-react";
+import { Search, Sun, Globe2, X, Filter, ListFilter } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import {
   galaxyData,
@@ -8,7 +8,9 @@ import {
   maxCitations,
   isFiltersActive,
   countMatchingPapers,
+  getMatchingPapers,
 } from "@/data/galaxy";
+import { getDomainColorStr } from "@/lib/colors";
 
 interface SearchResult {
   type: "sun" | "planet";
@@ -16,6 +18,14 @@ interface SearchResult {
   title: string;
   subtitle: string;
 }
+
+const domainIndexById: Record<string, number> = galaxyData.domains.reduce(
+  (acc, d, i) => {
+    acc[d.id] = i;
+    return acc;
+  },
+  {} as Record<string, number>,
+);
 
 const searchIndex: { type: "sun" | "planet"; id: string; title: string; subtitle: string; haystack: string }[] = [
   ...galaxyData.domains.map((d) => ({
@@ -42,6 +52,7 @@ export function CommandBar() {
   const {
     setCameraMode,
     setSelectedObject,
+    selectedObject,
     setSearchActive,
     filters,
     setFilters,
@@ -58,6 +69,15 @@ export function CommandBar() {
     () => (filtersActive ? countMatchingPapers(filters) : totalPapers),
     [filters, filtersActive, totalPapers],
   );
+  const matchingPapers = useMemo(
+    () => (filtersActive ? getMatchingPapers(filters) : []),
+    [filters, filtersActive],
+  );
+
+  const pickPaper = (id: string) => {
+    setCameraMode("god");
+    setSelectedObject({ type: "planet", id });
+  };
   const minYear = filters.minYear ?? yearRange.min;
   const maxYear = filters.maxYear ?? yearRange.max;
 
@@ -96,8 +116,9 @@ export function CommandBar() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="glass-panel mb-3 p-4 flex flex-col gap-5 max-h-[46vh] overflow-y-auto custom-scrollbar"
+            className="glass-panel mb-3 flex flex-col max-h-[72vh]"
           >
+            <div className="flex flex-col gap-5 p-4 shrink-0">
             <div className="flex items-center justify-between">
               <span className="font-display text-xs uppercase tracking-wider text-ink">Filters</span>
               <span className={`font-mono text-[11px] ${filtersActive ? "text-accent" : "text-ink-dim"}`}>
@@ -174,13 +195,66 @@ export function CommandBar() {
               </div>
             </div>
 
+            </div>
+
             {filtersActive && (
-              <button
-                onClick={resetFilters}
-                className="self-start flex items-center gap-1.5 font-display text-xs uppercase tracking-wider text-accent hover:text-ink transition-colors"
-              >
-                <X size={13} /> Reset filters
-              </button>
+              <div className="flex min-h-0 flex-col border-t-2 border-edge">
+                <div className="flex items-center gap-2 px-4 py-3 shrink-0">
+                  <ListFilter size={15} className="text-accent" />
+                  <span className="font-display text-xs uppercase tracking-wider text-ink">
+                    Matching Papers
+                  </span>
+                  <span className="font-mono text-[11px] text-ink-dim">{matchingPapers.length}</span>
+                  <button
+                    onClick={resetFilters}
+                    title="Clear filters"
+                    className="ml-auto flex items-center gap-1 font-display text-[11px] uppercase tracking-wider text-ink-dim transition-colors hover:text-ink"
+                  >
+                    Clear <X size={13} />
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto custom-scrollbar border-t border-white/8">
+                  {matchingPapers.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-sm text-ink-dim">
+                      No papers match these filters.
+                    </div>
+                  ) : (
+                    matchingPapers.map((p) => {
+                      const isSelected =
+                        selectedObject?.type === "planet" && selectedObject.id === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          onClick={() => pickPaper(p.id)}
+                          className={`flex w-full flex-col gap-1.5 px-4 py-2.5 text-left border-b border-white/8 last:border-0 transition-colors ${
+                            isSelected ? "bg-accent/20" : "hover:bg-accent/15"
+                          }`}
+                        >
+                          <span className="block text-sm leading-snug text-ink line-clamp-2">
+                            {p.title}
+                          </span>
+                          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-ink-dim">
+                            {p.year != null && <span>{p.year}</span>}
+                            <span className="text-accent">{p.citations.toLocaleString()} cites</span>
+                            {p.domainName && (
+                              <span className="flex min-w-0 items-center gap-1">
+                                <span
+                                  className="h-2 w-2 shrink-0 border border-edge"
+                                  style={{
+                                    background: getDomainColorStr(domainIndexById[p.domainId] ?? 0),
+                                  }}
+                                />
+                                <span className="truncate">{p.domainName}</span>
+                              </span>
+                            )}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
             )}
           </motion.div>
         )}

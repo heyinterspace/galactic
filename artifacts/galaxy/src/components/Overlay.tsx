@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ScrollIntro } from "./ScrollIntro";
 import { DetailPanel } from "./DetailPanel";
 import { CommandBar } from "./CommandBar";
-import { FilteredPapersPanel } from "./FilteredPapersPanel";
 import { TourOverlay } from "./TourOverlay";
 import { FlyHud } from "./FlyHud";
 import { Footer } from "./Footer";
@@ -28,8 +27,6 @@ export function Overlay() {
           {!tourActive && (
             <>
               <Header />
-
-              <FilteredPapersPanel />
 
               <AnimatePresence>
                 {hoveredObject && (
