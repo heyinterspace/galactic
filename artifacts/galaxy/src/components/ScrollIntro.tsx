@@ -90,6 +90,7 @@ export function ScrollIntro() {
   const reduced = usePrefersReducedMotion();
   const [progress, setProgress] = useState(0);
   const targetRef = useRef(0);
+  const flownRef = useRef(false);
   const warpRef = useRef<HTMLDivElement>(null);
 
   // Map wheel / touch input to a 0→1 target while flying.
@@ -98,7 +99,7 @@ export function ScrollIntro() {
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      targetRef.current = clamp(targetRef.current - e.deltaY / 4200, 0, 1);
+      targetRef.current = clamp(targetRef.current + e.deltaY / 4200, 0, 1);
     };
 
     let lastY = 0;
@@ -131,6 +132,18 @@ export function ScrollIntro() {
       const cur = introProgressRef.current;
       const next = cur + (targetRef.current - cur) * 0.07;
       introProgressRef.current = next;
+
+      // Once the visitor has flown in, scrolling all the way back to the very
+      // start returns them to the title screen.
+      if (next > 0.06) flownRef.current = true;
+      if (flownRef.current && targetRef.current <= 0.0001 && next < 0.005) {
+        flownRef.current = false;
+        introProgressRef.current = 0;
+        targetRef.current = 0;
+        setProgress(0);
+        setIntroStarted(false);
+        return;
+      }
 
       const speed = clamp(Math.abs(next - prev) * 48, 0, 1);
       prev = next;
@@ -200,7 +213,7 @@ export function ScrollIntro() {
               Welcome to
             </motion.p>
             <motion.h1
-              className="mb-4 font-title text-7xl font-medium italic tracking-tight text-ink md:text-9xl"
+              className="mb-4 font-title text-7xl font-bold tracking-tight text-ink md:text-9xl"
               initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ duration: 1.8, ease: "easeOut" }}
@@ -258,7 +271,7 @@ export function ScrollIntro() {
                 <p className="mb-3 font-display text-xs uppercase tracking-[0.35em] text-accent md:text-sm">
                   {b.kicker}
                 </p>
-                <div className="font-title text-7xl font-medium tracking-tight text-ink md:text-8xl">
+                <div className="font-title text-7xl font-bold tracking-tight text-ink md:text-8xl">
                   {b.value}
                 </div>
                 <p className="mt-3 font-mono text-sm uppercase tracking-[0.2em] text-ink-dim md:text-base">
@@ -304,7 +317,7 @@ export function ScrollIntro() {
             <p className="mb-3 font-display text-xs uppercase tracking-[0.35em] text-accent md:text-sm">
               You have arrived
             </p>
-            <h2 className="mb-3 font-title text-6xl font-medium italic tracking-tight text-ink md:text-8xl">
+            <h2 className="mb-3 font-title text-6xl font-bold tracking-tight text-ink md:text-8xl">
               Galactic
             </h2>
             <p className="font-display text-base font-semibold uppercase tracking-[0.3em] text-accent md:text-xl">
@@ -336,7 +349,7 @@ export function ScrollIntro() {
       {introStarted && !atEnd && (
         <button
           onClick={finishExplore}
-          className="pointer-events-auto absolute bottom-6 right-6 z-50 font-mono text-[10px] uppercase tracking-[0.3em] text-ink-dim/70 transition-colors hover:text-ink"
+          className="pointer-events-auto absolute bottom-6 left-1/2 z-50 -translate-x-1/2 font-mono text-[11px] uppercase tracking-[0.3em] text-ink-dim transition-colors hover:text-ink"
         >
           Skip intro ›
         </button>
