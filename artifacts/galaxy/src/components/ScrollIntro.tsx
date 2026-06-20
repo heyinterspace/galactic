@@ -68,8 +68,13 @@ const BEATS: Beat[] = [
     start: 0.77,
     end: 0.9,
     kicker: "Roughly",
-    value: Math.round(s.estimatedWords / 90_000).toLocaleString(),
-    caption: "novels' worth of writing across a career",
+    value: new Intl.NumberFormat("en", {
+      notation: "compact",
+      maximumFractionDigits: 0,
+    }).format(s.estimatedWords),
+    caption: `words written — about ${Math.round(
+      s.estimatedWords / 90_000,
+    ).toLocaleString()} novels' worth`,
   },
 ];
 
@@ -314,10 +319,11 @@ export function ScrollIntro() {
             exit={{ opacity: 0 }}
             transition={{ duration: 1 }}
           >
-            <p className="mb-12 font-display text-xs uppercase tracking-[0.35em] text-accent md:text-sm">
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,0,0,0.78)_0%,rgba(0,0,0,0.5)_38%,transparent_72%)]" />
+            <p className="relative mb-12 font-display text-xs uppercase tracking-[0.35em] text-accent [text-shadow:0_2px_18px_rgba(0,0,0,0.9)] md:text-sm">
               You have arrived
             </p>
-            <div className="pointer-events-auto flex flex-col items-center gap-4 sm:flex-row">
+            <div className="pointer-events-auto relative flex flex-col items-center gap-4 sm:flex-row">
               <button
                 onClick={finishExplore}
                 style={{ background: "var(--accent)", color: "var(--accent-ink)" }}
