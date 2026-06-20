@@ -85,14 +85,16 @@ function Header() {
 
   return (
     <div className="absolute top-0 left-0 right-0 p-6 flex items-start justify-between">
-      <div className="pointer-events-none">
-        <h1 className="text-3xl font-title font-bold tracking-tight text-ink">Galactic</h1>
-        <p className="text-ink-dim font-mono text-[11px] mt-1 uppercase tracking-widest">
+      <div>
+        <div className="flex items-center gap-3">
+          <h1 className="pointer-events-none text-3xl font-title font-bold tracking-tight text-ink">Galactic</h1>
+          <InfoButton />
+        </div>
+        <p className="pointer-events-none text-ink-dim font-mono text-[11px] mt-1 uppercase tracking-widest">
           A Journey of Scientific Exploration · {galaxyData.author.name}
         </p>
       </div>
       <div className="flex items-center gap-2">
-        <InfoButton />
         <button
           onClick={replayIntro}
           className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
@@ -157,10 +159,10 @@ function InfoButton() {
       <button
         onClick={() => setOpen(true)}
         aria-label="About this visualization"
-        className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
+        title="About this visualization"
+        className="glass-panel glass-panel-interactive flex items-center justify-center p-2 text-ink pointer-events-auto"
       >
-        <Info size={14} />
-        Info
+        <Info size={16} />
       </button>
 
       <AnimatePresence>
