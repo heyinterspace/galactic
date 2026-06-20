@@ -49,7 +49,10 @@ export function TourOverlay() {
           className="pointer-events-auto glass-panel p-6 max-w-xl mx-6 text-center"
         >
           <div className="flex items-center justify-center gap-2 mb-3 text-accent">
-            <Compass size={14} />
+            {(() => {
+              const Icon = stop.icon ?? Compass;
+              return <Icon size={14} />;
+            })()}
             <span className="text-xs font-display uppercase tracking-[0.3em]">
               Guided Tour
             </span>

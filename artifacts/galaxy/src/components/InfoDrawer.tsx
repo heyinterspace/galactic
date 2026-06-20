@@ -1,37 +1,10 @@
 import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Sun, Globe2, Moon, Orbit, Network, Compass } from "lucide-react";
+import { X } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { galaxyData } from "@/data/galaxy";
 import { SITE } from "@/config/site";
-
-const LEGEND = [
-  {
-    icon: Sun,
-    title: "Suns are research domains",
-    body: "Each sun is a research field represented in this body of work. The larger the sun, the more papers published in that domain.",
-  },
-  {
-    icon: Globe2,
-    title: "Planets are papers",
-    body: "Every planet orbiting a sun is a single published paper. The larger the planet, the more times it has been cited.",
-  },
-  {
-    icon: Moon,
-    title: "Moons are co-authors",
-    body: "Select a paper and its moons appear — the collaborators who co-authored it.",
-  },
-  {
-    icon: Orbit,
-    title: "Orbits show relevance",
-    body: "A planet's distance from its sun reflects how central the paper is to that domain.",
-  },
-  {
-    icon: Network,
-    title: "Nearby suns are related",
-    body: "Solar systems are grouped by broad research field, so suns clustered together belong to the same area of science — while distant clusters are different fields entirely.",
-  },
-];
+import { LEGEND, NAV_MODES } from "@/lib/legend";
 
 export function InfoDrawer() {
   const { infoOpen, setInfoOpen } = useAppState();
@@ -146,14 +119,14 @@ export function InfoDrawer() {
                 <div className="border-2 border-edge bg-white/5 p-4">
                   <div className="flex items-center gap-2.5">
                     <div className="grid h-8 w-8 shrink-0 place-items-center border-2 border-edge bg-white/5 text-accent">
-                      <Orbit size={15} />
+                      <NAV_MODES.orbit.icon size={15} />
                     </div>
                     <span className="font-display text-sm font-semibold uppercase tracking-wider text-ink">
-                      Orbit
+                      {NAV_MODES.orbit.name}
                     </span>
                   </div>
                   <p className="mt-2.5 text-[13px] leading-relaxed text-ink-dim">
-                    Float above the galaxy and study it from the outside.
+                    {NAV_MODES.orbit.blurb}
                   </p>
                   <ul className="mt-3 space-y-1.5 font-mono text-[11px] text-ink-dim">
                     <li>
@@ -174,14 +147,14 @@ export function InfoDrawer() {
                 <div className="border-2 border-edge bg-white/5 p-4">
                   <div className="flex items-center gap-2.5">
                     <div className="grid h-8 w-8 shrink-0 place-items-center border-2 border-edge bg-white/5 text-accent">
-                      <Compass size={15} />
+                      <NAV_MODES.fly.icon size={15} />
                     </div>
                     <span className="font-display text-sm font-semibold uppercase tracking-wider text-ink">
-                      Fly
+                      {NAV_MODES.fly.name}
                     </span>
                   </div>
                   <p className="mt-2.5 text-[13px] leading-relaxed text-ink-dim">
-                    Drop into the disk and pilot a ship through the stars.
+                    {NAV_MODES.fly.blurb}
                   </p>
                   <ul className="mt-3 space-y-1.5 font-mono text-[11px] text-ink-dim">
                     <li>
