@@ -54,7 +54,7 @@ export function CameraController() {
     }
   }, [introFinished]);
 
-  const keys = useRef({ forward: false, backward: false, left: false, right: false, up: false, down: false });
+  const keys = useRef({ forward: false, backward: false, left: false, right: false, up: false, down: false, lookLeft: false, lookRight: false, lookUp: false, lookDown: false, rollLeft: false, rollRight: false });
   const velocity = useRef(new THREE.Vector3());
 
   // Drag-to-look orientation for fly mode (no pointer lock, cursor stays visible).
@@ -83,7 +83,7 @@ export function CameraController() {
     flyTargetQuat.current.setFromRotationMatrix(m);
     velocity.current.set(0, 0, 0);
     roll.current = 0;
-    keys.current = { forward: false, backward: false, left: false, right: false, up: false, down: false };
+    keys.current = { forward: false, backward: false, left: false, right: false, up: false, down: false, lookLeft: false, lookRight: false, lookUp: false, lookDown: false, rollLeft: false, rollRight: false };
   }, [cameraMode, camera]);
 
   useEffect(() => {
@@ -94,17 +94,17 @@ export function CameraController() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (cameraMode !== "spaceship" || isTyping()) return;
       switch (e.code) {
-        case "ArrowUp":
         case "KeyW": keys.current.forward = true; break;
-        case "ArrowLeft":
         case "KeyA": keys.current.left = true; break;
-        case "ArrowDown":
         case "KeyS": keys.current.backward = true; break;
-        case "ArrowRight":
         case "KeyD": keys.current.right = true; break;
-        case "KeyE":
+        case "ArrowLeft": keys.current.lookLeft = true; e.preventDefault(); break;
+        case "ArrowRight": keys.current.lookRight = true; e.preventDefault(); break;
+        case "ArrowUp": keys.current.lookUp = true; e.preventDefault(); break;
+        case "ArrowDown": keys.current.lookDown = true; e.preventDefault(); break;
+        case "KeyQ": keys.current.rollLeft = true; break;
+        case "KeyE": keys.current.rollRight = true; break;
         case "Space": keys.current.up = true; e.preventDefault(); break;
-        case "KeyQ":
         case "ShiftLeft":
         case "ShiftRight": keys.current.down = true; break;
       }
@@ -112,17 +112,17 @@ export function CameraController() {
     const handleKeyUp = (e: KeyboardEvent) => {
       if (cameraMode !== "spaceship") return;
       switch (e.code) {
-        case "ArrowUp":
         case "KeyW": keys.current.forward = false; break;
-        case "ArrowLeft":
         case "KeyA": keys.current.left = false; break;
-        case "ArrowDown":
         case "KeyS": keys.current.backward = false; break;
-        case "ArrowRight":
         case "KeyD": keys.current.right = false; break;
-        case "KeyE":
+        case "ArrowLeft": keys.current.lookLeft = false; break;
+        case "ArrowRight": keys.current.lookRight = false; break;
+        case "ArrowUp": keys.current.lookUp = false; break;
+        case "ArrowDown": keys.current.lookDown = false; break;
+        case "KeyQ": keys.current.rollLeft = false; break;
+        case "KeyE": keys.current.rollRight = false; break;
         case "Space": keys.current.up = false; break;
-        case "KeyQ":
         case "ShiftLeft":
         case "ShiftRight": keys.current.down = false; break;
       }
@@ -130,7 +130,7 @@ export function CameraController() {
     // Release all thrust if the window loses focus mid-press (otherwise a key
     // held during an alt-tab would be stuck on).
     const releaseAll = () => {
-      keys.current = { forward: false, backward: false, left: false, right: false, up: false, down: false };
+      keys.current = { forward: false, backward: false, left: false, right: false, up: false, down: false, lookLeft: false, lookRight: false, lookUp: false, lookDown: false, rollLeft: false, rollRight: false };
     };
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
@@ -293,9 +293,23 @@ export function CameraController() {
         return;
       }
 
-      // Bank slightly into strafes for a spaceship feel, then apply look angles.
+      // Keyboard look: arrow keys turn (yaw) and tilt (pitch), matching the
+      // mouse-drag range so the two input methods stay interchangeable.
+      const lookLimit = Math.PI / 2 - 0.05;
+      const yawInput = Number(keys.current.lookLeft) - Number(keys.current.lookRight);
+      const pitchInput = Number(keys.current.lookUp) - Number(keys.current.lookDown);
+      yaw.current += yawInput * 1.6 * delta;
+      pitch.current += pitchInput * 1.3 * delta;
+      pitch.current = Math.max(-lookLimit, Math.min(lookLimit, pitch.current));
+
+      // Bank into strafes (auto) plus manual Q/E roll, then apply look angles.
       const strafe = Number(keys.current.right) - Number(keys.current.left);
-      roll.current = THREE.MathUtils.lerp(roll.current, -strafe * 0.22, Math.min(1, delta * 4));
+      const rollInput = Number(keys.current.rollLeft) - Number(keys.current.rollRight);
+      roll.current = THREE.MathUtils.lerp(
+        roll.current,
+        -strafe * 0.22 + rollInput * 0.6,
+        Math.min(1, delta * 4),
+      );
       state.camera.quaternion.setFromEuler(
         new THREE.Euler(pitch.current, yaw.current, roll.current, "YXZ"),
       );

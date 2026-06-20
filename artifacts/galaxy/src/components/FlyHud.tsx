@@ -40,8 +40,9 @@ export function FlyHud() {
           >
             <Move3d size={16} className="shrink-0 text-accent" />
             <span className="text-sm text-ink">
-              <span className="font-mono">Drag</span> to steer ·{" "}
-              <span className="font-mono">W A S D</span> to fly ·{" "}
+              <span className="font-mono">W A S D</span> fly ·{" "}
+              <span className="font-mono">← ↑ ↓ →</span> look ·{" "}
+              <span className="font-mono">Q</span>/<span className="font-mono">E</span> roll ·{" "}
               <span className="font-mono">Space</span>/<span className="font-mono">Shift</span> up &amp; down
             </span>
           </motion.div>
