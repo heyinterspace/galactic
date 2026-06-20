@@ -19,6 +19,7 @@ interface AppState {
   setIntroFinished: (val: boolean) => void;
   introStarted: boolean;
   setIntroStarted: (val: boolean) => void;
+  replayIntro: () => void;
   introProgressRef: React.MutableRefObject<number>;
   cameraMode: CameraMode;
   setCameraMode: (mode: CameraMode) => void;
@@ -42,10 +43,40 @@ interface AppState {
 
 const AppStateContext = createContext<AppState | undefined>(undefined);
 
+const INTRO_SEEN_KEY = 'galactic:introSeen';
+
+function readIntroSeen(): boolean {
+  try {
+    return localStorage.getItem(INTRO_SEEN_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeIntroSeen() {
+  try {
+    localStorage.setItem(INTRO_SEEN_KEY, '1');
+  } catch {
+    // ignore (private mode / storage disabled)
+  }
+}
+
 export function AppStateProvider({ children }: { children: ReactNode }) {
-  const [introFinished, setIntroFinished] = useState(false);
+  const introSeen = readIntroSeen();
+  const [introFinished, setIntroFinishedState] = useState(introSeen);
   const [introStarted, setIntroStarted] = useState(false);
-  const introProgressRef = useRef(0);
+  const introProgressRef = useRef(introSeen ? 1 : 0);
+
+  const setIntroFinished = useCallback((val: boolean) => {
+    if (val) writeIntroSeen();
+    setIntroFinishedState(val);
+  }, []);
+
+  const replayIntro = useCallback(() => {
+    introProgressRef.current = 0;
+    setIntroStarted(false);
+    setIntroFinishedState(false);
+  }, []);
   const [cameraMode, setCameraMode] = useState<CameraMode>('god');
   const [selectedObject, setSelectedObject] = useState<SelectedObject>(null);
   const [hoveredObject, setHoveredObject] = useState<HoveredObject>(null);
@@ -82,6 +113,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setIntroFinished,
         introStarted,
         setIntroStarted,
+        replayIntro,
         introProgressRef,
         cameraMode,
         setCameraMode,

@@ -7,7 +7,7 @@ import { FilteredPapersPanel } from "./FilteredPapersPanel";
 import { TourOverlay } from "./TourOverlay";
 import { FlyHud } from "./FlyHud";
 import { galaxyData } from "@/data/galaxy";
-import { Compass } from "lucide-react";
+import { Compass, Rewind } from "lucide-react";
 
 export function Overlay() {
   const { introFinished, selectedObject, hoveredObject, searchActive, tourActive } = useAppState();
@@ -80,7 +80,7 @@ export function Overlay() {
 }
 
 function Header() {
-  const { startTour } = useAppState();
+  const { startTour, replayIntro } = useAppState();
 
   return (
     <div className="absolute top-0 left-0 right-0 p-6 flex items-start justify-between">
@@ -90,13 +90,22 @@ function Header() {
           A Journey of Scientific Exploration · {galaxyData.author.name}
         </p>
       </div>
-      <button
-        onClick={startTour}
-        className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
-      >
-        <Compass size={14} />
-        Take the Tour
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={replayIntro}
+          className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
+        >
+          <Rewind size={14} />
+          Replay Intro
+        </button>
+        <button
+          onClick={startTour}
+          className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
+        >
+          <Compass size={14} />
+          Take the Tour
+        </button>
+      </div>
     </div>
   );
 }
