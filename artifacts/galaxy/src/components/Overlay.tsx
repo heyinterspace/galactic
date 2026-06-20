@@ -8,6 +8,7 @@ import { TourOverlay } from "./TourOverlay";
 import { FlyHud } from "./FlyHud";
 import { Footer } from "./Footer";
 import { InfoDrawer } from "./InfoDrawer";
+import { ChangelogDrawer } from "./ChangelogDrawer";
 import { galaxyData } from "@/data/galaxy";
 import { presence } from "@/lib/presence";
 import { useSyncExternalStore } from "react";
@@ -79,6 +80,7 @@ export function Overlay() {
           )}
           <TourOverlay />
           <InfoDrawer />
+          <ChangelogDrawer />
         </>
       )}
     </div>

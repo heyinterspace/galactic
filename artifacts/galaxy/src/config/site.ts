@@ -1,6 +1,8 @@
+import { CURRENT_VERSION } from "@/data/changelog";
+
 export const SITE = {
   domain: "galactic.dad",
-  version: "1.0.0",
+  version: CURRENT_VERSION,
   org: {
     name: "Interspace Venture",
     url: "https://interspace.ventures",

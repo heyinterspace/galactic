@@ -4,12 +4,12 @@ description: Galactic is an open-source template for ANY scientist — never har
 ---
 
 The app must work for any researcher (a dad, a mom, a mentor, yourself), not
-just the original subject (Dr. Mahendra S. Rao). It ships with no hardcoded
-identity: every name/stat/domain the UI shows comes from the baked
+just the original subject. It ships with no hardcoded identity: every
+name/stat/domain the UI shows comes from the baked
 `src/data/galaxyData.json` `author`/`stats`/`domains`/`papers`.
 
 **Why:** The user explicitly wanted others to fork it and generate the gift for
-their own parent. A stray hardcoded name or gendered pronoun ("Dr. Rao", "he
+their own parent. A stray hardcoded name or gendered pronoun ("Dr. X", "he
 published", "Father's Day") silently breaks that for everyone else.
 
 **How to apply:**

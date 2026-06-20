@@ -4,13 +4,22 @@ import { useAppState } from "@/lib/store";
 import { useGithubStars, formatStars } from "@/lib/useGithubStars";
 
 export function Footer() {
-  const { setInfoOpen } = useAppState();
+  const { setInfoOpen, setChangelogOpen } = useAppState();
   const { stars, url } = useGithubStars();
 
   return (
     <footer className="absolute inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-1.5 pt-1 pointer-events-none">
       <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center font-mono text-[10px] leading-relaxed tracking-wide text-ink-dim/70">
-        <span>© 2026 v{SITE.version}</span>
+        <span>
+          © 2026{" "}
+          <button
+            onClick={() => setChangelogOpen(true)}
+            title="View the flight log"
+            className="pointer-events-auto text-accent underline-offset-2 transition-colors hover:underline"
+          >
+            v{SITE.version}
+          </button>
+        </span>
         <span className="text-ink-dim/30">·</span>
         <span>
           <span className="text-ink-dim">{SITE.domain}</span> is an{" "}

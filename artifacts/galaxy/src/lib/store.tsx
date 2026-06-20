@@ -42,6 +42,8 @@ interface AppState {
   setTourStopIndex: (i: number) => void;
   infoOpen: boolean;
   setInfoOpen: (val: boolean) => void;
+  changelogOpen: boolean;
+  setChangelogOpen: (val: boolean) => void;
 }
 
 const AppStateContext = createContext<AppState | undefined>(undefined);
@@ -88,6 +90,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setIntroStarted(false);
     setIntroFinishedState(false);
     setInfoOpen(false);
+    setChangelogOpen(false);
   }, []);
 
   const forgetIntro = useCallback(() => {
@@ -96,6 +99,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setIntroStarted(false);
     setIntroFinishedState(false);
     setInfoOpen(false);
+    setChangelogOpen(false);
   }, []);
   const [cameraMode, setCameraMode] = useState<CameraMode>('god');
   const [selectedObject, setSelectedObject] = useState<SelectedObject>(null);
@@ -115,6 +119,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [tourActive, setTourActive] = useState(false);
   const [tourStopIndex, setTourStopIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [changelogOpen, setChangelogOpen] = useState(false);
 
   const startTour = () => {
     setSelectedObject(null);
@@ -157,6 +162,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setTourStopIndex,
         infoOpen,
         setInfoOpen,
+        changelogOpen,
+        setChangelogOpen,
       }}
     >
       {children}
