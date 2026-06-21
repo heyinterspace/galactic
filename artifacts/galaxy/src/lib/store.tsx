@@ -49,6 +49,10 @@ interface AppState {
   setInfoOpen: (val: boolean) => void;
   changelogOpen: boolean;
   setChangelogOpen: (val: boolean) => void;
+  // Right-hand "Flight Console" expanded vs collapsed-to-rail. Lifted to the store
+  // so the galaxy can slide aside (GPU transform) in sync with the console width.
+  consoleOpen: boolean;
+  setConsoleOpen: (val: boolean) => void;
   // Live dataset switching: load any scientist from OpenAlex at runtime.
   datasetVersion: number;
   datasetStatus: DatasetStatus;
@@ -133,6 +137,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [tourStopIndex, setTourStopIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
+  const [consoleOpen, setConsoleOpen] = useState(true);
 
   const [datasetVersion, setDatasetVersion] = useState(0);
   const [datasetStatus, setDatasetStatus] = useState<DatasetStatus>('idle');
@@ -232,6 +237,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setInfoOpen,
         changelogOpen,
         setChangelogOpen,
+        consoleOpen,
+        setConsoleOpen,
         datasetVersion,
         datasetStatus,
         datasetError,

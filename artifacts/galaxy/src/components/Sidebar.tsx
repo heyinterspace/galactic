@@ -52,9 +52,10 @@ export function Sidebar() {
     setInfoOpen,
     replayIntro,
     startTour,
+    consoleOpen: open,
+    setConsoleOpen: setOpen,
   } = useAppState();
 
-  const [open, setOpen] = useState(true);
   const [query, setQuery] = useState("");
   const [domainMenuOpen, setDomainMenuOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -186,7 +187,7 @@ export function Sidebar() {
 
   return (
     <div
-      className={`console-panel relative z-30 flex h-full shrink-0 flex-col overflow-hidden transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[width] ${
+      className={`console-panel absolute right-0 top-0 z-30 flex h-full flex-col overflow-hidden transition-[width] duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[width] ${
         open ? "w-[min(16rem,80vw)]" : "w-14"
       }`}
     >

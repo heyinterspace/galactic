@@ -29,10 +29,10 @@ export function Scene() {
         camera={{ position: [INTRO_START.x, INTRO_START.y, INTRO_START.z], fov: 55, near: 0.1, far: 60000 }}
         gl={{ antialias: true, alpha: false, stencil: false, preserveDrawingBuffer: true }}
         dpr={[1, 1.5]}
-        // Debounce the WebGL buffer resize so toggling the console doesn't trigger
-        // a per-frame renderer + camera-aspect recompute (which made the shift
-        // stutter). During the width transition the existing frame is cheaply
-        // CSS-scaled to fit, then the buffer snaps to crisp once the layout settles.
+        // Debounce the WebGL buffer resize so a window resize doesn't trigger a
+        // per-frame renderer + camera-aspect + bloom-target recompute. (The console
+        // toggle no longer resizes this canvas — the galaxy slides via transform —
+        // so this only coalesces real viewport resizes now.)
         resize={{ debounce: 150 }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
