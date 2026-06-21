@@ -109,14 +109,14 @@ function Header() {
           className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
         >
           <Rewind size={14} />
-          Replay Intro
+          Replay
         </button>
         <button
           onClick={startTour}
           className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
         >
           <Compass size={14} />
-          Take the Tour
+          Tour
         </button>
       </div>
     </div>

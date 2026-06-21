@@ -73,8 +73,18 @@ export function InfoDrawer() {
             transition={{ type: "spring", stiffness: 320, damping: 34 }}
             className="custom-scrollbar absolute inset-x-0 bottom-0 mx-auto max-h-[85vh] w-full max-w-2xl overflow-y-auto border-t-2 border-edge bg-bg/95 p-7 backdrop-blur-xl"
           >
+            <button
+              onClick={() => setInfoOpen(false)}
+              aria-label="Close"
+              autoFocus
+              className="absolute top-4 right-4 text-ink-dim transition-colors hover:text-ink"
+            >
+              <X size={18} />
+            </button>
+
             <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-ink-dim/30" />
-            <div className="absolute top-4 right-4 flex items-center gap-2">
+
+            <div className="mb-6 flex items-center justify-center gap-2">
               <button
                 onClick={handleShare}
                 aria-label="Share"
@@ -101,14 +111,6 @@ export function InfoDrawer() {
                   </span>
                 )}
               </a>
-              <button
-                onClick={() => setInfoOpen(false)}
-                aria-label="Close"
-                autoFocus
-                className="ml-1 text-ink-dim transition-colors hover:text-ink"
-              >
-                <X size={18} />
-              </button>
             </div>
 
             <span className="font-mono text-[10px] uppercase tracking-widest text-accent">
@@ -153,7 +155,7 @@ export function InfoDrawer() {
 
             <div className="mt-8 border-t-2 border-edge pt-6">
               <span className="font-mono text-[10px] uppercase tracking-widest text-accent">
-                How to read this galaxy
+                The Hitchhiker's Guide to Galactic
               </span>
               <h3 className="mt-1 mb-4 text-lg font-title font-bold tracking-tight text-ink">
                 A lifetime of work, mapped to the stars
