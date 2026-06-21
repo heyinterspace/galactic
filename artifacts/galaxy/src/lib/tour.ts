@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
-import { Compass } from "lucide-react";
+import { Compass, Sparkles, TrendingUp } from "lucide-react";
 import { galaxyData } from "@/data/galaxy";
-import { LEGEND_BY_KEY, NAV_MODES } from "@/lib/legend";
+import { LEGEND_BY_KEY } from "@/lib/legend";
 
 export type TourTarget =
   | { type: "overview" }
@@ -16,87 +16,86 @@ export interface TourStop {
   icon?: LucideIcon;
 }
 
+const compactWords = (n: number) =>
+  new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+
 function buildTourStops(): TourStop[] {
   const stops: TourStop[] = [];
   const { author, stats, papers } = galaxyData;
   const domains = [...galaxyData.domains].sort(
     (a, b) => b.totalCitations - a.totalCitations,
   );
+  const topPapers = [...papers].sort((a, b) => b.citations - a.citations);
 
+  // 1. The ONLY explainer: one slide that doubles as the welcome and the key.
   stops.push({
     title: "Welcome",
-    caption: `A lifetime of discovery by ${author.name}, mapped as a galaxy of ${stats.totalPapers} papers and ${stats.totalCitations.toLocaleString()} citations. Let's take a quick tour of how to read it.`,
+    caption: `A lifetime of discovery by ${author.name} — ${stats.totalPapers} papers and ${stats.totalCitations.toLocaleString()} citations across ${stats.yearsActive} years. Quick key: each glowing sun is a research field, every planet a paper (bigger = more cited), and the moons are co-authors. Now, the highlights.`,
     target: { type: "overview" },
-    duration: 8000,
+    duration: 9000,
+    icon: Sparkles,
   });
 
-  // Suns = research domains, anchored on the brightest one so the concept lands
-  // on something the viewer is actually looking at.
+  // 2. The defining research field (brightest sun).
   if (domains[0]) {
     stops.push({
-      title: LEGEND_BY_KEY.suns.title,
-      caption: `${LEGEND_BY_KEY.suns.body} The brightest here — ${domains[0].name} — anchors this universe with ${domains[0].totalCitations.toLocaleString()} citations across ${domains[0].paperCount} papers.`,
+      title: domains[0].name,
+      caption: `${author.name}'s defining field: ${domains[0].name}, blazing with ${domains[0].totalCitations.toLocaleString()} citations across ${domains[0].paperCount} papers — the brightest sun in this galaxy.`,
       target: { type: "sun", id: domains[0].id },
-      duration: 9000,
+      duration: 8500,
       icon: LEGEND_BY_KEY.suns.icon,
     });
   }
 
-  // Planets = papers, anchored on the single most-cited paper.
-  const mostCited = [...papers].sort((a, b) => b.citations - a.citations)[0];
+  // 3. The second-biggest field, to show range.
+  if (domains[1]) {
+    stops.push({
+      title: domains[1].name,
+      caption: `Close behind: ${domains[1].name} — ${domains[1].totalCitations.toLocaleString()} citations over ${domains[1].paperCount} papers, a whole second sun's worth of work.`,
+      target: { type: "sun", id: domains[1].id },
+      duration: 8000,
+      icon: LEGEND_BY_KEY.suns.icon,
+    });
+  }
+
+  // 4. The signature paper (largest planet).
+  const mostCited = topPapers[0];
   if (mostCited) {
     stops.push({
-      title: LEGEND_BY_KEY.planets.title,
-      caption: `${LEGEND_BY_KEY.planets.body} The largest here, "${mostCited.title}", has been cited ${mostCited.citations.toLocaleString()} times${mostCited.year ? ` since ${mostCited.year}` : ""}.`,
+      title: "His most-cited work",
+      caption: `"${mostCited.title}" — cited ${mostCited.citations.toLocaleString()} times${mostCited.year ? ` since ${mostCited.year}` : ""}. The single largest planet in the galaxy.`,
       target: { type: "planet", id: mostCited.id },
       duration: 9000,
       icon: LEGEND_BY_KEY.planets.icon,
     });
+  }
 
-    // Moons = co-authors. Stay on the same paper so its moons are visible.
+  // 5. A second landmark paper.
+  const secondCited = topPapers[1];
+  if (secondCited) {
     stops.push({
-      title: LEGEND_BY_KEY.moons.title,
-      caption: LEGEND_BY_KEY.moons.body,
-      target: { type: "planet", id: mostCited.id },
-      duration: 8000,
-      icon: LEGEND_BY_KEY.moons.icon,
+      title: "Another landmark",
+      caption: `"${secondCited.title}" — ${secondCited.citations.toLocaleString()} citations${secondCited.year ? ` since ${secondCited.year}` : ""}, and one of his most-cited contributions.`,
+      target: { type: "planet", id: secondCited.id },
+      duration: 8500,
+      icon: LEGEND_BY_KEY.planets.icon,
     });
   }
 
-  // Orbits = relevance, shown against a second domain's system.
-  const orbitDomain = domains[1] ?? domains[0];
-  if (orbitDomain) {
-    stops.push({
-      title: LEGEND_BY_KEY.orbits.title,
-      caption: LEGEND_BY_KEY.orbits.body,
-      target: { type: "sun", id: orbitDomain.id },
-      duration: 8000,
-      icon: LEGEND_BY_KEY.orbits.icon,
-    });
-  }
-
-  // Nearby suns = related fields, best seen from the overview.
+  // 6. The career, by the numbers.
   stops.push({
-    title: LEGEND_BY_KEY.related.title,
-    caption: LEGEND_BY_KEY.related.body,
-    target: { type: "overview" },
-    duration: 8000,
-    icon: LEGEND_BY_KEY.related.icon,
-  });
-
-  // How to get around: Orbit vs Fly.
-  stops.push({
-    title: "Two ways to explore",
-    caption: `${NAV_MODES.orbit.name} — ${NAV_MODES.orbit.blurb} ${NAV_MODES.fly.name} — ${NAV_MODES.fly.blurb} Switch between them anytime from the bar at the bottom (the dashed line is your route to follow when flying).`,
+    title: "By the numbers",
+    caption: `An h-index of ${author.hIndex} and ${author.i10Index} well-cited papers, ${stats.uniqueCoAuthors.toLocaleString()} collaborators worldwide, and an estimated ${compactWords(stats.estimatedWords)}+ words published — about ${Math.round(stats.estimatedWords / 90_000).toLocaleString()} novels' worth.`,
     target: { type: "overview" },
     duration: 9000,
-    icon: NAV_MODES.fly.icon,
+    icon: TrendingUp,
   });
 
+  // 7. Hand off to free exploration.
   stops.push({
     title: "Explore Freely",
     caption:
-      "That's the map. Now drift through the rest of the universe at your own pace.",
+      "That's the highlight reel. Now drift through the rest of the universe at your own pace.",
     target: { type: "overview" },
     duration: 6000,
     icon: Compass,
