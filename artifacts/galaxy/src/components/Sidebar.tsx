@@ -152,7 +152,11 @@ export function Sidebar() {
   };
 
   return (
-    <div className="absolute right-0 top-16 z-30 flex max-h-[calc(100vh-7rem)] flex-col items-end pointer-events-none">
+    <div
+      className={`console-panel relative z-30 flex h-full shrink-0 flex-col overflow-hidden transition-[width] duration-200 ${
+        open ? "w-[min(16rem,80vw)]" : "w-14"
+      }`}
+    >
       <AnimatePresence mode="wait" initial={false}>
         {open ? (
           <motion.div
@@ -161,7 +165,7 @@ export function Sidebar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 12 }}
             transition={{ duration: 0.18 }}
-            className="console-panel pointer-events-auto flex max-h-full w-[min(16rem,calc(100vw-2.5rem))] flex-col overflow-hidden"
+            className="flex h-full w-full flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between gap-2 border-b-2 border-edge px-3 py-2">
@@ -450,7 +454,7 @@ export function Sidebar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 12 }}
             transition={{ duration: 0.18 }}
-            className="console-panel pointer-events-auto flex flex-col items-center gap-1 p-1.5"
+            className="flex h-full w-full flex-col items-center gap-1 p-1.5"
           >
             <RailButton onClick={() => setOpen(true)} label="Expand console">
               <ChevronLeft size={16} />

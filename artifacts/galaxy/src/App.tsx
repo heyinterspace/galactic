@@ -1,6 +1,7 @@
 import { AppStateProvider, useAppState } from "@/lib/store";
 import { Scene } from "@/components/Scene";
 import { Overlay } from "@/components/Overlay";
+import { Sidebar } from "@/components/Sidebar";
 import { FlyCockpit } from "@/components/FlyCockpit";
 import { DatasetLoadingOverlay } from "@/components/DatasetLoadingOverlay";
 
@@ -10,10 +11,15 @@ import { DatasetLoadingOverlay } from "@/components/DatasetLoadingOverlay";
 function GalaxyView() {
   const { datasetVersion } = useAppState();
   return (
-    <div key={datasetVersion} className="contents">
-      <Scene />
-      <FlyCockpit />
-      <Overlay />
+    <div key={datasetVersion} className="flex h-full w-full">
+      {/* Galaxy display — the console is a separate column to the right, so the
+          3D viewport never extends underneath it. */}
+      <div className="relative flex-1 overflow-hidden">
+        <Scene />
+        <FlyCockpit />
+        <Overlay />
+      </div>
+      <Sidebar />
     </div>
   );
 }

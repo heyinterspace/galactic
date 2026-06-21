@@ -2,7 +2,6 @@ import { useAppState } from "@/lib/store";
 import { AnimatePresence, motion } from "framer-motion";
 import { ScrollIntro } from "./ScrollIntro";
 import { DetailPanel } from "./DetailPanel";
-import { Sidebar } from "./Sidebar";
 import { TourOverlay } from "./TourOverlay";
 import { FlyHud } from "./FlyHud";
 import { Footer } from "./Footer";
@@ -24,7 +23,6 @@ export function Overlay() {
           {!tourActive && (
             <>
               <Header />
-              <Sidebar />
 
               <AnimatePresence>
                 {hoveredObject && (
