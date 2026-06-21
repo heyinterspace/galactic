@@ -130,7 +130,8 @@ function PlanetDetail({ id }: { id: string }) {
           href={paper.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="glass-panel glass-panel-interactive flex items-center justify-center gap-2 w-full py-3 bg-accent text-accent-foreground font-display text-xs uppercase tracking-widest"
+          style={{ background: "var(--accent)" }}
+          className="glass-panel glass-panel-interactive flex items-center justify-center gap-2 w-full py-3 text-accent-foreground font-display text-xs uppercase tracking-widest"
         >
           <span>View Source</span>
           <ExternalLink size={14} />

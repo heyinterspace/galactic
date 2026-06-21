@@ -19,9 +19,16 @@ is actually **two different scientists** that OpenAlex conflated under one id:
 
 **Rule:** disambiguate by **research cluster (institution + co-author)**, not by
 date alone. The clean filter is: exclude Northwestern affiliation, exclude
-Reddy-coauthored, and drop the 3 stray pre-1994 works (→ `--min-year 1994`).
-Result: 498→377 works, ~36.4k→~28.9k citations, h-index 100→90 (the merged
-h-index was inflated by the other person).
+Reddy-coauthored, plus `--min-year 1994` for a few stray earlier works. This also
+deflates the merged h-index, which was inflated by the other person's papers.
+
+**Front matter is separate, universal noise:** OpenAlex also catalogs journal
+front matter as "works" (tables of contents, indexes, "Issue Information",
+contributor lists), mostly from journals the subject edited. These have ~0
+citations and get mis-topic-classified into bogus suns (e.g. "Economics",
+"Aerospace"). The fetch script drops them **always** (not gated on
+disambiguation) via `isFrontMatter()` = OpenAlex type `paratext` OR a title
+regex. This is safe for any author, not just merged profiles.
 
 **Why:** the two people share an exact display name, so name-form filtering can't
 separate them; institution + co-author + min-year is the only signature that does.

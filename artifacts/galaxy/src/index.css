@@ -50,9 +50,9 @@
   --neg: #3c3f4b;
   --neg-ink: #f0f0f2;
 
-  --glass-blur: 18px;
-  --glass-tint: 255 255 255;
-  --glass-alpha: 0.07;
+  --glass-blur: 24px;
+  --glass-tint: 18 19 26;
+  --glass-alpha: 0.55;
   --border-w: 2px;
   --hard-x: 7px;
   --hard-y: 7px;

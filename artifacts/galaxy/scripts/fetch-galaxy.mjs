@@ -70,6 +70,20 @@ const MAX_YEAR = parseYear(args.maxYear ?? process.env.GALAXY_MAX_YEAR, "--max-y
 const HAS_FILTERS =
   EXCLUDE_INSTITUTIONS.size > 0 || EXCLUDE_COAUTHORS.size > 0 || MIN_YEAR != null || MAX_YEAR != null;
 
+// Journal "front matter" that OpenAlex catalogs as works but which are not real
+// papers: tables of contents, indexes, issue information, contributor lists, etc.
+// These are universal noise for any author (often from journals they edit), carry
+// ~0 citations, and frequently get mis-topic-classified into bogus domains. Always
+// dropped, independent of the disambiguation filters below.
+const FRONT_MATTER_TYPES = new Set(["paratext"]);
+const FRONT_MATTER_TITLE_RE =
+  /\b(table of contents|title page|front matter|issue information|masthead|editorial board|content experts|list of contributors|(author|subject)\s*(and\s*(author|subject)\s*)?index)\b/i;
+function isFrontMatter(w) {
+  if (FRONT_MATTER_TYPES.has(w.type)) return true;
+  const title = (w.title || w.display_name || "").trim();
+  return title !== "" && FRONT_MATTER_TITLE_RE.test(title);
+}
+
 // True when a raw OpenAlex work should be dropped by the disambiguation filters.
 function isExcludedWork(w) {
   const year = w.publication_year;
@@ -162,15 +176,23 @@ async function main() {
     process.stderr.write(`fetched ${rawWorks.length}/${page.meta.count}\n`);
   }
 
-  // 2b. Disambiguation filters — drop works belonging to a merged same-named
-  // researcher before anything else is computed.
-  const works = HAS_FILTERS ? rawWorks.filter((w) => !isExcludedWork(w)) : rawWorks;
+  // 2b. Drop journal front matter (always) and any merged same-named researcher's
+  // works (when disambiguation filters are set) before anything else is computed.
+  const afterFrontMatter = rawWorks.filter((w) => !isFrontMatter(w));
+  const frontMatterDropped = rawWorks.length - afterFrontMatter.length;
+  if (frontMatterDropped > 0) {
+    process.stderr.write(
+      `dropped ${frontMatterDropped} front-matter entr${frontMatterDropped === 1 ? "y" : "ies"} ` +
+        `(tables of contents, indexes, issue info)\n`
+    );
+  }
+  const works = HAS_FILTERS ? afterFrontMatter.filter((w) => !isExcludedWork(w)) : afterFrontMatter;
   if (HAS_FILTERS) {
     process.stderr.write(
       `filters active (institutions: [${[...EXCLUDE_INSTITUTIONS].join(", ") || "—"}], ` +
         `co-authors: [${[...EXCLUDE_COAUTHORS].join(", ") || "—"}], ` +
-        `years: ${MIN_YEAR ?? "*"}–${MAX_YEAR ?? "*"}) → kept ${works.length}/${rawWorks.length} works ` +
-        `(dropped ${rawWorks.length - works.length})\n`
+        `years: ${MIN_YEAR ?? "*"}–${MAX_YEAR ?? "*"}) → kept ${works.length}/${afterFrontMatter.length} works ` +
+        `(dropped ${afterFrontMatter.length - works.length})\n`
     );
   }
 
@@ -299,9 +321,11 @@ async function main() {
     0
   );
 
-  // 5b. Author headline stats. When disambiguation filters are active the
-  // OpenAlex author object still reflects the *merged* profile, so recompute
-  // every headline figure from the kept works only.
+  // 5b. Author headline stats. Whenever any works were dropped — disambiguation
+  // filters and/or front-matter removal — the OpenAlex author object still
+  // reflects the *full/merged* profile, so recompute every headline figure from
+  // the kept works only to keep `author.*` consistent with `stats`/`papers`.
+  const RECOMPUTE_STATS = HAS_FILTERS || frontMatterDropped > 0;
   const computeHIndex = (cites) => {
     const desc = [...cites].sort((a, b) => b - a);
     let h = 0;
@@ -339,7 +363,7 @@ async function main() {
   };
 
   const citationsList = papers.map((p) => p.citations);
-  const authorBlock = HAS_FILTERS
+  const authorBlock = RECOMPUTE_STATS
     ? {
         name: author.display_name,
         openAlexId: AUTHOR_ID,
