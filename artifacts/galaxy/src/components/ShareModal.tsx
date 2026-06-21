@@ -128,7 +128,7 @@ export function ShareModal({ open, onClose }: { open: boolean; onClose: () => vo
               </button>
 
               <span className="font-mono text-[10px] uppercase tracking-widest text-accent">
-                Share this galaxy
+                Share this Galactic
               </span>
               <h2
                 id="share-modal-title"

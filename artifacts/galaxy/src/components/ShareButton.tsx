@@ -9,8 +9,8 @@ export function ShareButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        aria-label="Share this galaxy"
-        title="Share this galaxy"
+        aria-label="Share this Galactic"
+        title="Share this Galactic"
         className="flex h-11 w-11 items-center justify-center border-2 border-edge bg-white/5 text-ink transition-all hover:bg-white/10 pointer-events-auto md:h-9 md:w-9"
       >
         <Share2 size={15} />
