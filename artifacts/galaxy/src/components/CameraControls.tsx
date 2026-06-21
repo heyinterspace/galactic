@@ -23,6 +23,16 @@ const FLY_ENTER_DUR = 1.4;
 const BASE_FOV = 55;
 const FLY_FOV = 42;
 
+// Reusable scratch objects for the per-frame camera loop. Allocating fresh
+// Vector3/Euler every frame (at 60fps) creates needless GC pressure; the god,
+// tour, and fly branches are mutually exclusive within a frame, so they can
+// safely share these.
+const _worldPos = new THREE.Vector3();
+const _offset = new THREE.Vector3();
+const _lookAt = new THREE.Vector3();
+const _move = new THREE.Vector3();
+const _euler = new THREE.Euler();
+
 function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
@@ -253,9 +263,9 @@ export function CameraController() {
 
     if (tourActive) {
       const stop = tourStops[tourStopIndex];
-      const worldPos = new THREE.Vector3();
+      const worldPos = _worldPos.set(0, 0, 0);
       let hasTarget = false;
-      let offset = new THREE.Vector3(0, 40, 110);
+      const offset = _offset.set(0, 40, 110);
 
       if (stop && stop.target.type !== "overview") {
         if (stop.target.type === "sun") {
@@ -265,7 +275,7 @@ export function CameraController() {
             hasTarget = worldPos.lengthSq() > 0;
           }
           const r = sunRadii[stop.target.id] || 20;
-          offset = new THREE.Vector3(0, r * 4 + 30, r * 9 + 60);
+          offset.set(0, r * 4 + 30, r * 9 + 60);
         } else {
           const planet = planetRefs[stop.target.id];
           if (planet) {
@@ -273,7 +283,7 @@ export function CameraController() {
             hasTarget = worldPos.lengthSq() > 0;
           }
           const pr = planetOrbits[stop.target.id]?.planetRadius || 1;
-          offset = new THREE.Vector3(0, pr * 6 + 8, pr * 16 + 16);
+          offset.set(0, pr * 6 + 8, pr * 16 + 16);
         }
       }
 
@@ -294,9 +304,9 @@ export function CameraController() {
 
     if (cameraMode === "god") {
       const orbit = orbitRef.current;
-      const worldPos = new THREE.Vector3();
+      const worldPos = _worldPos.set(0, 0, 0);
       let hasTarget = false;
-      let offset = new THREE.Vector3(0, 30, 60);
+      const offset = _offset.set(0, 30, 60);
 
       if (selectedObject) {
         if (selectedObject.type === "sun") {
@@ -306,7 +316,7 @@ export function CameraController() {
             hasTarget = worldPos.lengthSq() > 0;
           }
           const r = sunRadii[selectedObject.id] || 20;
-          offset = new THREE.Vector3(0, r * 4 + 30, r * 9 + 60);
+          offset.set(0, r * 4 + 30, r * 9 + 60);
         } else if (selectedObject.type === "planet") {
           const planet = planetRefs[selectedObject.id];
           if (planet) {
@@ -314,16 +324,17 @@ export function CameraController() {
             hasTarget = worldPos.lengthSq() > 0;
           }
           const pr = planetOrbits[selectedObject.id]?.planetRadius || 1;
-          offset = new THREE.Vector3(0, pr * 6 + 8, pr * 16 + 16);
+          offset.set(0, pr * 6 + 8, pr * 16 + 16);
         }
       }
 
-      const lookAt = hasTarget ? worldPos : new THREE.Vector3(0, 0, 0);
+      const lookAt = hasTarget ? worldPos : _lookAt.set(0, 0, 0);
 
       if (focusing.current) {
         // Brief fly-to: drive both camera and pivot toward the framed target.
         targetLookAt.current.copy(lookAt);
-        targetPosition.current.copy(hasTarget ? worldPos.clone().add(offset) : HOME_POS);
+        if (hasTarget) targetPosition.current.copy(worldPos).add(offset);
+        else targetPosition.current.copy(HOME_POS);
         state.camera.position.lerp(targetPosition.current, delta * 3);
         if (orbit) orbit.target.lerp(targetLookAt.current, delta * 3);
         focusElapsed.current += delta;
@@ -377,7 +388,7 @@ export function CameraController() {
         Math.min(1, delta * 4),
       );
       state.camera.quaternion.setFromEuler(
-        new THREE.Euler(pitch.current, yaw.current, roll.current, "YXZ"),
+        _euler.set(pitch.current, yaw.current, roll.current, "YXZ"),
       );
 
       // Momentum-based 6DOF flight. Forward/strafe follow the look direction;
@@ -385,7 +396,7 @@ export function CameraController() {
       const accel = 900 * delta;
       const maxSpeed = 520;
 
-      const move = new THREE.Vector3(
+      const move = _move.set(
         Number(keys.current.right) - Number(keys.current.left),
         0,
         Number(keys.current.backward) - Number(keys.current.forward),
