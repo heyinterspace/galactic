@@ -19,30 +19,13 @@ interface SearchResult {
   subtitle: string;
 }
 
-const domainIndexById: Record<string, number> = galaxyData.domains.reduce(
-  (acc, d, i) => {
-    acc[d.id] = i;
-    return acc;
-  },
-  {} as Record<string, number>,
-);
-
-const searchIndex: { type: "sun" | "planet"; id: string; title: string; subtitle: string; haystack: string }[] = [
-  ...galaxyData.domains.map((d) => ({
-    type: "sun" as const,
-    id: d.id,
-    title: d.name,
-    subtitle: `Domain · ${d.paperCount} papers`,
-    haystack: `${d.name} ${d.field}`.toLowerCase(),
-  })),
-  ...galaxyData.papers.map((p) => ({
-    type: "planet" as const,
-    id: p.id,
-    title: p.title,
-    subtitle: `${p.year ?? ""} · ${p.citations.toLocaleString()} citations`,
-    haystack: `${p.title} ${p.coAuthors.join(" ")} ${p.year ?? ""}`.toLowerCase(),
-  })),
-];
+type SearchIndexItem = {
+  type: "sun" | "planet";
+  id: string;
+  title: string;
+  subtitle: string;
+  haystack: string;
+};
 
 function compactNumber(n: number): string {
   return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
@@ -62,6 +45,40 @@ export function CommandBar() {
   const [showFilters, setShowFilters] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { stats } = galaxyData;
+
+  // Built from the live galaxyData at mount; the whole CommandBar remounts on a
+  // dataset swap (key={datasetVersion}), so these stay in sync with the active
+  // scientist without depending on stale module-load snapshots.
+  const domainIndexById = useMemo<Record<string, number>>(
+    () =>
+      galaxyData.domains.reduce(
+        (acc, d, i) => {
+          acc[d.id] = i;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+    [],
+  );
+  const searchIndex = useMemo<SearchIndexItem[]>(
+    () => [
+      ...galaxyData.domains.map((d) => ({
+        type: "sun" as const,
+        id: d.id,
+        title: d.name,
+        subtitle: `Domain · ${d.paperCount} papers`,
+        haystack: `${d.name} ${d.field}`.toLowerCase(),
+      })),
+      ...galaxyData.papers.map((p) => ({
+        type: "planet" as const,
+        id: p.id,
+        title: p.title,
+        subtitle: `${p.year ?? ""} · ${p.citations.toLocaleString()} citations`,
+        haystack: `${p.title} ${p.coAuthors.join(" ")} ${p.year ?? ""}`.toLowerCase(),
+      })),
+    ],
+    [],
+  );
 
   const filtersActive = isFiltersActive(filters);
   const totalPapers = galaxyData.papers.length;
@@ -105,7 +122,7 @@ export function CommandBar() {
       }
     }
     return out;
-  }, [query]);
+  }, [query, searchIndex]);
 
   useEffect(() => {
     setSearchActive(results.length > 0);

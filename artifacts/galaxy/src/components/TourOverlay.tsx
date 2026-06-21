@@ -1,12 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X, ChevronRight, Compass } from "lucide-react";
 import { useAppState } from "@/lib/store";
-import { tourStops } from "@/lib/tour";
+import { getTourStops } from "@/lib/tour";
 
 export function TourOverlay() {
   const { tourActive, tourStopIndex, setTourStopIndex, endTour } = useAppState();
 
+  const tourStops = useMemo(() => getTourStops(), []);
   const stop = tourStops[tourStopIndex];
   const isLast = tourStopIndex >= tourStops.length - 1;
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, Play, Compass } from "lucide-react";
 import { useAppState } from "@/lib/store";
@@ -27,8 +27,9 @@ interface Beat {
   caption: string;
 }
 
-const s = galaxyData.stats;
-const BEATS: Beat[] = [
+function buildBeats(): Beat[] {
+  const s = galaxyData.stats;
+  return [
   {
     start: 0.06,
     end: 0.2,
@@ -76,7 +77,8 @@ const BEATS: Beat[] = [
       s.estimatedWords / 90_000,
     ).toLocaleString()} novels' worth`,
   },
-];
+  ];
+}
 
 function beatOpacity(p: number, start: number, end: number) {
   const fade = 0.045;
@@ -93,6 +95,9 @@ export function ScrollIntro() {
     introProgressRef,
   } = useAppState();
   const reduced = usePrefersReducedMotion();
+  // Recomputed per mount so the intro stat beats reflect the active scientist
+  // after a live dataset swap (ScrollIntro remounts via key={datasetVersion}).
+  const beats = useMemo(() => buildBeats(), []);
   const [progress, setProgress] = useState(0);
   const targetRef = useRef(0);
   const flownRef = useRef(false);
@@ -260,7 +265,7 @@ export function ScrollIntro() {
       {/* NUX SCROLLYTELLING PANELS */}
       {introStarted && !reduced && !atEnd && (
         <div className="absolute inset-x-0 top-0 bottom-[32vh] z-50 flex items-center justify-center px-6">
-          {BEATS.map((b, i) => {
+          {beats.map((b, i) => {
             const op = beatOpacity(progress, b.start, b.end);
             if (op <= 0.001) return null;
             const local = (progress - b.start) / (b.end - b.start);

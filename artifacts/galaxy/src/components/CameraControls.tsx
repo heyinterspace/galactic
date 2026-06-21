@@ -1,10 +1,10 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useAppState } from "@/lib/store";
 import { planetRefs, sunRefs, planetOrbits, sunRadii } from "./GalaxySystem";
-import { tourStops } from "@/lib/tour";
+import { getTourStops } from "@/lib/tour";
 
 // Resting overview after the intro flight (and god-mode home). Kept close and
 // low to the galactic plane so the spiral arms sweep across and past the frame
@@ -42,6 +42,9 @@ export function CameraController() {
   const camera = useThree((s) => s.camera);
   const gl = useThree((s) => s.gl);
   const orbitRef = useRef<any>(null);
+  // Recomputed per mount; CameraController remounts on a dataset swap so tour
+  // targets/captions track the active scientist (see key={datasetVersion}).
+  const tourStops = useMemo(() => getTourStops(), []);
 
   const targetPosition = useRef(new THREE.Vector3().copy(HOME_POS));
   const targetLookAt = useRef(new THREE.Vector3());

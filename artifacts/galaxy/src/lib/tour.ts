@@ -104,4 +104,9 @@ function buildTourStops(): TourStop[] {
   return stops;
 }
 
-export const tourStops = buildTourStops();
+// Computed on demand (not a module-load constant) so it reflects the active
+// scientist after a live dataset swap. Consumers memoize this at mount; the tour
+// UI/camera components remount on dataset change (key={datasetVersion}).
+export function getTourStops(): TourStop[] {
+  return buildTourStops();
+}
