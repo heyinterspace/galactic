@@ -1,5 +1,6 @@
 - [Galaxy visual language](galaxy-visual-language.md) — Structured Liquidity applies to 2D UI only; 3D scene stays photoreal with per-domain stellar colors; orbits must read as real planetary systems, not belts.
 - [R3F headless WebGL](r3f-headless-webgl.md) — screenshot sandbox has no GPU so WebGL context fails; this is expected, verify via typecheck + browser logs, not screenshots.
+- [OpenAlex merged profile](openalex-merged-profile.md) — the galaxy author id merges TWO same-named people; disambiguate by institution+coauthor (not year alone) via fetch-galaxy filters; recompute headline stats from kept works.
 - [Fly camera mode](fly-camera-mode.md) — first-person spaceship: dive-in on entry, OrbitControls unmounted, momentum velocity (clamp+delta-damp), never unbounded translate.
 - [Reusable identity](reusable-identity.md) — open-source template for ANY scientist: never hardcode name/pronoun/relationship; identity comes only from galaxyData; generator takes --name/--id.
 - [Intro flight camera](intro-flight-camera.md) — scroll intro drives the ONE live R3F camera via a ref (introProgressRef), not state, so per-frame progress doesn't re-render global consumers.

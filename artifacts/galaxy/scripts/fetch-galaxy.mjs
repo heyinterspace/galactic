@@ -8,21 +8,81 @@
 //   node scripts/fetch-galaxy.mjs --id A5111365293         > src/data/galaxyData.json
 // You can also use env vars: GALAXY_AUTHOR_NAME or GALAXY_AUTHOR_ID.
 // Set a contact email with --mailto you@example.com (OpenAlex etiquette).
+//
+// Disambiguation filters — use these when OpenAlex has merged a *different*
+// same-named researcher into the profile. Each filter drops matching works
+// before the snapshot is built, and the headline author stats (works, citations,
+// h-index, i10, counts-by-year, institution) are then RECOMPUTED from only the
+// kept works so the numbers reflect the real person, not the merged profile.
+//   --exclude-institution <OpenAlexInstId>   drop works affiliated with this institution (repeatable)
+//   --exclude-coauthor <OpenAlexAuthorId>    drop works co-authored with this person (repeatable)
+//   --min-year <YYYY> / --max-year <YYYY>    drop works outside this publication-year range
+// Env equivalents: GALAXY_EXCLUDE_INSTITUTIONS, GALAXY_EXCLUDE_COAUTHORS (comma-separated),
+// GALAXY_MIN_YEAR, GALAXY_MAX_YEAR.
 const BASE = "https://api.openalex.org";
 
+const stripId = (s) =>
+  String(s || "")
+    .trim()
+    .replace("https://openalex.org/", "")
+    .replace(/\/+$/, "");
+
+// Parse a year arg/env into a finite integer, or null. Throws on garbage so a
+// typo never silently disables year filtering while stats get recomputed.
+function parseYear(v, label) {
+  if (v == null || v === "") return null;
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 0) {
+    throw new Error(`Invalid ${label}: "${v}" — expected a 4-digit year, e.g. 1994.`);
+  }
+  return n;
+}
+
 function parseArgs(argv) {
-  const out = {};
+  const out = { excludeInstitutions: [], excludeCoauthors: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--name") out.name = argv[++i];
     else if (a === "--id" || a === "--author") out.id = argv[++i];
     else if (a === "--mailto") out.mailto = argv[++i];
+    else if (a === "--exclude-institution") out.excludeInstitutions.push(stripId(argv[++i]));
+    else if (a === "--exclude-coauthor") out.excludeCoauthors.push(stripId(argv[++i]));
+    else if (a === "--min-year") out.minYear = argv[++i];
+    else if (a === "--max-year") out.maxYear = argv[++i];
   }
   return out;
 }
 
 const args = parseArgs(process.argv.slice(2));
 const MAILTO = args.mailto || process.env.GALAXY_MAILTO || "galaxy-gift@example.com";
+
+const splitEnv = (v) => (v ? v.split(",").map((s) => stripId(s.trim())).filter(Boolean) : []);
+const EXCLUDE_INSTITUTIONS = new Set([
+  ...args.excludeInstitutions,
+  ...splitEnv(process.env.GALAXY_EXCLUDE_INSTITUTIONS),
+]);
+const EXCLUDE_COAUTHORS = new Set([
+  ...args.excludeCoauthors,
+  ...splitEnv(process.env.GALAXY_EXCLUDE_COAUTHORS),
+]);
+const MIN_YEAR = parseYear(args.minYear ?? process.env.GALAXY_MIN_YEAR, "--min-year");
+const MAX_YEAR = parseYear(args.maxYear ?? process.env.GALAXY_MAX_YEAR, "--max-year");
+const HAS_FILTERS =
+  EXCLUDE_INSTITUTIONS.size > 0 || EXCLUDE_COAUTHORS.size > 0 || MIN_YEAR != null || MAX_YEAR != null;
+
+// True when a raw OpenAlex work should be dropped by the disambiguation filters.
+function isExcludedWork(w) {
+  const year = w.publication_year;
+  if (MIN_YEAR != null && (year == null || year < MIN_YEAR)) return true;
+  if (MAX_YEAR != null && (year == null || year > MAX_YEAR)) return true;
+  for (const a of w.authorships || []) {
+    if (a.author?.id && EXCLUDE_COAUTHORS.has(stripId(a.author.id))) return true;
+    for (const inst of a.institutions || []) {
+      if (inst?.id && EXCLUDE_INSTITUTIONS.has(stripId(inst.id))) return true;
+    }
+  }
+  return false;
+}
 
 async function getJSON(url) {
   const res = await fetch(url, { headers: { "User-Agent": `galaxy-app (mailto:${MAILTO})` } });
@@ -91,15 +151,36 @@ async function main() {
   ].join(",");
 
   let cursor = "*";
-  const works = [];
+  const rawWorks = [];
   while (cursor) {
     const url = `${BASE}/works?filter=author.id:${AUTHOR_ID}&select=${select}&per-page=200&cursor=${encodeURIComponent(
       cursor
     )}&mailto=${MAILTO}`;
     const page = await getJSON(url);
-    works.push(...page.results);
+    rawWorks.push(...page.results);
     cursor = page.meta.next_cursor;
-    process.stderr.write(`fetched ${works.length}/${page.meta.count}\n`);
+    process.stderr.write(`fetched ${rawWorks.length}/${page.meta.count}\n`);
+  }
+
+  // 2b. Disambiguation filters — drop works belonging to a merged same-named
+  // researcher before anything else is computed.
+  const works = HAS_FILTERS ? rawWorks.filter((w) => !isExcludedWork(w)) : rawWorks;
+  if (HAS_FILTERS) {
+    process.stderr.write(
+      `filters active (institutions: [${[...EXCLUDE_INSTITUTIONS].join(", ") || "—"}], ` +
+        `co-authors: [${[...EXCLUDE_COAUTHORS].join(", ") || "—"}], ` +
+        `years: ${MIN_YEAR ?? "*"}–${MAX_YEAR ?? "*"}) → kept ${works.length}/${rawWorks.length} works ` +
+        `(dropped ${rawWorks.length - works.length})\n`
+    );
+  }
+
+  if (works.length === 0) {
+    throw new Error(
+      HAS_FILTERS
+        ? `No works left after filtering (started with ${rawWorks.length}). ` +
+          "Loosen the --exclude-*/--min-year/--max-year filters."
+        : `OpenAlex returned no works for author ${AUTHOR_ID}.`
+    );
   }
 
   // 3. Normalize papers
@@ -218,21 +299,78 @@ async function main() {
     0
   );
 
+  // 5b. Author headline stats. When disambiguation filters are active the
+  // OpenAlex author object still reflects the *merged* profile, so recompute
+  // every headline figure from the kept works only.
+  const computeHIndex = (cites) => {
+    const desc = [...cites].sort((a, b) => b - a);
+    let h = 0;
+    for (let i = 0; i < desc.length; i++) if (desc[i] >= i + 1) h = i + 1;
+    return h;
+  };
+  const computeCountsByYear = () => {
+    const byYear = new Map();
+    for (const w of works) {
+      const y = w.publication_year;
+      if (!y) continue;
+      const e = byYear.get(y) || { year: y, works_count: 0, cited_by_count: 0 };
+      e.works_count += 1;
+      e.cited_by_count += w.cited_by_count || 0;
+      byYear.set(y, e);
+    }
+    return [...byYear.values()].sort((a, b) => a.year - b.year);
+  };
+  // Most frequent institution across the author's own authorships in kept works.
+  const computeInstitution = () => {
+    const counts = new Map();
+    for (const w of works) {
+      for (const a of w.authorships || []) {
+        if (a.author?.id && stripId(a.author.id) !== AUTHOR_ID) continue;
+        for (const inst of a.institutions || []) {
+          const name = inst?.display_name;
+          if (name) counts.set(name, (counts.get(name) || 0) + 1);
+        }
+      }
+    }
+    let best = null;
+    let bestN = 0;
+    for (const [name, n] of counts) if (n > bestN) ((best = name), (bestN = n));
+    return best;
+  };
+
+  const citationsList = papers.map((p) => p.citations);
+  const authorBlock = HAS_FILTERS
+    ? {
+        name: author.display_name,
+        openAlexId: AUTHOR_ID,
+        institution:
+          computeInstitution() ||
+          (author.last_known_institutions || [])[0]?.display_name ||
+          null,
+        hIndex: computeHIndex(citationsList),
+        i10Index: citationsList.filter((c) => c >= 10).length,
+        worksCount: papers.length,
+        citedByCount: totalCitations,
+        countsByYear: computeCountsByYear(),
+        orcid: author.orcid || null,
+      }
+    : {
+        name: author.display_name,
+        openAlexId: AUTHOR_ID,
+        institution:
+          (author.last_known_institutions || [])[0]?.display_name ||
+          author.affiliations?.[0]?.institution?.display_name ||
+          null,
+        hIndex: author.summary_stats?.h_index ?? null,
+        i10Index: author.summary_stats?.i10_index ?? null,
+        worksCount: author.works_count,
+        citedByCount: author.cited_by_count,
+        countsByYear: (author.counts_by_year || []).sort((a, b) => a.year - b.year),
+        orcid: author.orcid || null,
+      };
+
   const data = {
-    author: {
-      name: author.display_name,
-      openAlexId: AUTHOR_ID,
-      institution:
-        (author.last_known_institutions || [])[0]?.display_name ||
-        author.affiliations?.[0]?.institution?.display_name ||
-        null,
-      hIndex: author.summary_stats?.h_index ?? null,
-      i10Index: author.summary_stats?.i10_index ?? null,
-      worksCount: author.works_count,
-      citedByCount: author.cited_by_count,
-      countsByYear: (author.counts_by_year || []).sort((a, b) => a.year - b.year),
-      orcid: author.orcid || null,
-    },
+    author: authorBlock,
     stats: {
       totalPapers: papers.length,
       totalCitations,

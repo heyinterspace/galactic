@@ -10,6 +10,28 @@ An immersive 3D website (galactic.dad) that visualizes the lifetime scientific w
    - Tip: name search prints the top OpenAlex matches to stderr; if it picks the wrong person, re-run with the correct `--id`.
 2. That's it — restart the `galaxy` workflow. The title, stats, domains, papers, and co-authors all redraw from the new snapshot.
 
+### When OpenAlex merged a *different* same-named researcher into the profile
+
+OpenAlex sometimes lumps two distinct scientists who share a name under one author id. The fetch script can drop the wrong person's works (and then recomputes all headline stats — works, citations, h-index, i10, counts-by-year, institution — from only the kept works):
+
+- `--exclude-institution <OpenAlexInstId>` — drop works affiliated with this institution (repeatable)
+- `--exclude-coauthor <OpenAlexAuthorId>` — drop works co-authored with this person (repeatable)
+- `--min-year <YYYY>` / `--max-year <YYYY>` — drop works outside this publication-year range
+- Env equivalents: `GALAXY_EXCLUDE_INSTITUTIONS`, `GALAXY_EXCLUDE_COAUTHORS` (comma-separated), `GALAXY_MIN_YEAR`, `GALAXY_MAX_YEAR`
+
+The shipped snapshot for **Mahendra S. Rao** uses this — profile `A5111365293` merged a Northwestern carcinogenesis/peroxisome researcher (Janardan K. Reddy's lab) with the real stem-cell scientist. The exact command that produced the current snapshot:
+
+```
+pnpm --filter @workspace/galaxy run fetch:galaxy -- \
+  --id A5111365293 \
+  --exclude-institution I111979921 \
+  --exclude-coauthor A5034754078 \
+  --min-year 1994 \
+  > artifacts/galaxy/src/data/galaxyData.json
+```
+
+Disambiguate by research cluster (institution + co-author), **not** by year alone — the wrong person here published into the 2000s, so a plain year cutoff would not separate them.
+
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
