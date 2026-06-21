@@ -14,6 +14,7 @@ import { useSyncExternalStore } from "react";
 import { Compass, Rewind, Info, Orbit, Github, Star } from "lucide-react";
 import { SITE } from "@/config/site";
 import { useGithubStars, formatStars } from "@/lib/useGithubStars";
+import { ShareButton } from "./ShareButton";
 
 export function Overlay() {
   const { introFinished, selectedObject, hoveredObject, searchActive, tourActive } = useAppState();
@@ -103,6 +104,7 @@ function Header() {
         <LivePresence />
       </div>
       <div className="flex items-center gap-2">
+        <ShareButton />
         <GitHubLink />
         <button
           onClick={replayIntro}

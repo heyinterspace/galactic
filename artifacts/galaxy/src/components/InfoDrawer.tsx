@@ -1,41 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Github, Star, Share2, Check } from "lucide-react";
+import { X } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { galaxyData } from "@/data/galaxy";
 import { SITE } from "@/config/site";
 import { LEGEND, NAV_MODES } from "@/lib/legend";
-import { useGithubStars, formatStars } from "@/lib/useGithubStars";
 import { ResearcherSearch } from "@/components/ResearcherSearch";
 
 export function InfoDrawer() {
   const { infoOpen, setInfoOpen, setChangelogOpen } = useAppState();
-  const { stars, url } = useGithubStars();
-  const [copied, setCopied] = useState(false);
-
-  const shareUrl =
-    typeof window !== "undefined" ? window.location.href : `https://${SITE.domain}`;
-
-  const handleShare = async () => {
-    const data = {
-      title: "Galactic",
-      text: `Explore ${galaxyData.author.name}'s life in science as an interactive galaxy.`,
-      url: shareUrl,
-    };
-    try {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share(data);
-        return;
-      }
-      if (typeof navigator !== "undefined" && navigator.clipboard) {
-        await navigator.clipboard.writeText(shareUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch {
-      /* user cancelled share or clipboard blocked — no-op */
-    }
-  };
 
   const openChangelog = () => {
     setInfoOpen(false);
@@ -84,35 +57,6 @@ export function InfoDrawer() {
             </button>
 
             <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-ink-dim/30" />
-
-            <div className="mb-6 flex items-center justify-center gap-2">
-              <button
-                onClick={handleShare}
-                aria-label="Share"
-                title="Share Galactic"
-                className="flex items-center gap-1.5 border-2 border-edge bg-white/5 px-3 py-1.5 font-display text-[11px] uppercase tracking-wider text-ink transition-colors hover:bg-white/10"
-              >
-                {copied ? <Check size={13} className="text-accent" /> : <Share2 size={13} />}
-                {copied ? "Copied" : "Share"}
-              </button>
-              <a
-                href={url ?? SITE.github.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="View source on GitHub"
-                title="View source on GitHub"
-                className="flex items-center gap-1.5 border-2 border-edge bg-white/5 px-3 py-1.5 font-display text-[11px] uppercase tracking-wider text-ink transition-colors hover:bg-white/10"
-              >
-                <Github size={13} />
-                GitHub
-                {stars !== null && (
-                  <span className="inline-flex items-center gap-0.5 text-accent">
-                    <Star size={10} className="fill-current" />
-                    {formatStars(stars)}
-                  </span>
-                )}
-              </a>
-            </div>
 
             <div className="mb-7">
               <ResearcherSearch />

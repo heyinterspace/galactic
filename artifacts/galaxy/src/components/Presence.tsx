@@ -77,8 +77,11 @@ function Wisp({ id }: { id: string }) {
 
 /** Renders faint glowing wisps for every other explorer, in galaxy-local space. */
 export function PresenceWisps() {
-  const { galaxyTilt } = useAppState();
+  const { galaxyTilt, datasetVersion } = useAppState();
   const ids = useSyncExternalStore(presence.subscribe, presence.getPeerIds, () => EMPTY);
+
+  // Live presence runs only on the canonical default galaxy (datasetVersion 0).
+  if (datasetVersion !== 0) return null;
 
   return (
     <group rotation-x={galaxyTilt}>
@@ -93,15 +96,21 @@ const EMPTY: string[] = [];
 
 /** Streams this explorer's camera pose to the server (no visual output). */
 export function PresenceBroadcaster() {
-  const { galaxyTilt, cameraMode } = useAppState();
+  const { galaxyTilt, cameraMode, datasetVersion } = useAppState();
   const camera = useThree((s) => s.camera);
 
+  // Presence (and its server cost) is scoped to the canonical default galaxy
+  // only. Exploring another scientist live never opens a presence socket.
+  const presenceEnabled = datasetVersion === 0;
+
   useEffect(() => {
+    if (!presenceEnabled) return;
     presence.start();
     return () => presence.stop();
-  }, []);
+  }, [presenceEnabled]);
 
   useFrame(() => {
+    if (!presenceEnabled) return;
     _target.copy(camera.position);
     if (galaxyTilt) _target.applyAxisAngle(X_AXIS, -galaxyTilt);
     presence.sendPose(_target.x, _target.y, _target.z, cameraMode === "spaceship" ? 1 : 0);

@@ -7,6 +7,7 @@ import { GalaxySystem } from "./GalaxySystem";
 import { CameraController, INTRO_START } from "./CameraControls";
 import { PresenceBroadcaster, PresenceWisps } from "./Presence";
 import { useAppState } from "@/lib/store";
+import { setGalaxyCanvas } from "@/lib/share";
 
 function Background() {
   const tex = useTexture(`${import.meta.env.BASE_URL}textures/galaxy_starfield.png`);
@@ -26,11 +27,13 @@ export function Scene() {
     <div className="absolute inset-0 z-0">
       <Canvas
         camera={{ position: [INTRO_START.x, INTRO_START.y, INTRO_START.z], fov: 55, near: 0.1, far: 60000 }}
-        gl={{ antialias: true, alpha: false, stencil: false }}
+        gl={{ antialias: true, alpha: false, stencil: false, preserveDrawingBuffer: true }}
         dpr={[1, 1.5]}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.08;
+          // Expose the live canvas so the Share button can snapshot the current view.
+          setGalaxyCanvas(gl.domElement);
         }}
         onPointerMissed={() => setSelectedObject(null)}
       >
