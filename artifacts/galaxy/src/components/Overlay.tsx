@@ -25,6 +25,7 @@ export function Overlay() {
           {!tourActive && (
             <>
               <Header />
+              <SideNav />
 
               <AnimatePresence>
                 {hoveredObject && (
@@ -61,7 +62,7 @@ export function Overlay() {
               <AnimatePresence>
                 {selectedObject && (
                   <div
-                    className={`absolute z-30 inset-x-3 bottom-24 max-h-[38vh] md:inset-x-auto md:bottom-auto md:top-24 md:right-5 md:w-[min(384px,calc(100vw-2.5rem))] md:max-h-[calc(100vh-13rem)] md:!block overflow-y-auto custom-scrollbar pointer-events-auto ${
+                    className={`absolute z-30 inset-x-3 bottom-24 max-h-[38vh] md:inset-x-auto md:bottom-auto md:top-28 md:left-5 md:w-[min(384px,calc(100vw-2.5rem))] md:max-h-[calc(100vh-13rem)] md:!block overflow-y-auto custom-scrollbar pointer-events-auto ${
                       searchActive ? "hidden" : "block"
                     }`}
                   >
@@ -85,35 +86,57 @@ export function Overlay() {
 }
 
 function Header() {
-  const { startTour, replayIntro } = useAppState();
+  return (
+    <div className="absolute top-0 left-0 p-6">
+      <h1 className="pointer-events-none text-3xl font-title font-bold tracking-tight text-ink">Galactic</h1>
+      <p className="pointer-events-none text-ink-dim font-mono text-[11px] mt-1 uppercase tracking-widest">
+        A Journey of Scientific Exploration · {galaxyData.author.name}
+      </p>
+      <LivePresence />
+    </div>
+  );
+}
+
+function SideNav() {
+  const { startTour, replayIntro, cameraMode, setCameraMode, setInfoOpen } = useAppState();
 
   return (
-    <div className="absolute top-0 left-0 right-0 p-6 flex items-start justify-between">
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="pointer-events-none text-3xl font-title font-bold tracking-tight text-ink mr-1">Galactic</h1>
-          <InfoButton />
-          <ModeToggle />
-          <button
-            onClick={replayIntro}
-            className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
-          >
-            <Rewind size={14} />
-            Replay
-          </button>
-          <button
-            onClick={startTour}
-            className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
-          >
-            <Compass size={14} />
-            Tour
-          </button>
-        </div>
-        <p className="pointer-events-none text-ink-dim font-mono text-[11px] mt-1 uppercase tracking-widest">
-          A Journey of Scientific Exploration · {galaxyData.author.name}
-        </p>
-        <LivePresence />
-      </div>
+    <div className="absolute right-5 top-1/2 z-20 flex w-36 -translate-y-1/2 flex-col gap-2 pointer-events-none">
+      <button
+        onClick={() => setInfoOpen(true)}
+        aria-label="About this visualization"
+        title="About this visualization"
+        className="glass-panel glass-panel-interactive flex w-full items-center justify-start gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
+      >
+        <Info size={16} />
+        Info
+      </button>
+      <ModeButton
+        active={cameraMode === "god"}
+        onClick={() => setCameraMode("god")}
+        icon={<Orbit size={14} />}
+        label="Orbit"
+      />
+      <ModeButton
+        active={cameraMode === "spaceship"}
+        onClick={() => setCameraMode("spaceship")}
+        icon={<Compass size={14} />}
+        label="Fly"
+      />
+      <button
+        onClick={replayIntro}
+        className="glass-panel glass-panel-interactive flex w-full items-center justify-start gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
+      >
+        <Rewind size={14} />
+        Replay
+      </button>
+      <button
+        onClick={startTour}
+        className="glass-panel glass-panel-interactive flex w-full items-center justify-start gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
+      >
+        <Compass size={14} />
+        Tour
+      </button>
     </div>
   );
 }
@@ -128,43 +151,6 @@ function LivePresence() {
         <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
       </span>
       <span className="text-ink">{count}</span> galacticon{count === 1 ? "" : "s"} streaming now
-    </div>
-  );
-}
-
-function InfoButton() {
-  const { setInfoOpen } = useAppState();
-
-  return (
-    <button
-      onClick={() => setInfoOpen(true)}
-      aria-label="About this visualization"
-      title="About this visualization"
-      className="glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider text-ink pointer-events-auto"
-    >
-      <Info size={16} />
-      Info
-    </button>
-  );
-}
-
-function ModeToggle() {
-  const { cameraMode, setCameraMode } = useAppState();
-
-  return (
-    <div className="flex items-center gap-2">
-      <ModeButton
-        active={cameraMode === "god"}
-        onClick={() => setCameraMode("god")}
-        icon={<Orbit size={14} />}
-        label="Orbit"
-      />
-      <ModeButton
-        active={cameraMode === "spaceship"}
-        onClick={() => setCameraMode("spaceship")}
-        icon={<Compass size={14} />}
-        label="Fly"
-      />
     </div>
   );
 }
@@ -185,7 +171,7 @@ function ModeButton({
       onClick={onClick}
       aria-pressed={active}
       style={active ? { background: "var(--accent)" } : undefined}
-      className={`glass-panel glass-panel-interactive flex items-center gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider pointer-events-auto ${
+      className={`glass-panel glass-panel-interactive flex w-full items-center justify-start gap-2 px-4 py-2 text-xs font-display uppercase tracking-wider pointer-events-auto ${
         active ? "text-accent-foreground" : "text-ink"
       }`}
     >
