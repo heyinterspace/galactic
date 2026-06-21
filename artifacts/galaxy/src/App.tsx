@@ -18,7 +18,7 @@ function GalaxyView() {
           the galaxy in the space left of the console: half the console's width. */}
       <div
         className="absolute inset-0 transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
-        style={{ transform: `translateX(${consoleOpen ? "calc(min(16rem,80vw) * -0.5)" : "-1.75rem"})` }}
+        style={{ transform: `translateX(${consoleOpen ? "calc(min(14rem,80vw) * -0.5)" : "-1.75rem"})` }}
       >
         <Scene />
       </div>
