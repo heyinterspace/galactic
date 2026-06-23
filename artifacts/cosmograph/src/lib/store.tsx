@@ -58,7 +58,7 @@ interface AppState {
   setChangelogOpen: (val: boolean) => void;
   customizeOpen: boolean;
   setCustomizeOpen: (val: boolean) => void;
-  // Right-hand "Flight Console" expanded vs collapsed-to-rail. Lifted to the store
+  // Right-hand "Mission Control" expanded vs collapsed-to-rail. Lifted to the store
   // so the galaxy can slide aside (GPU transform) in sync with the console width.
   consoleOpen: boolean;
   setConsoleOpen: (val: boolean) => void;

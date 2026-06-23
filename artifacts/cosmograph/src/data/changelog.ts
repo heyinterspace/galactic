@@ -30,9 +30,9 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "3.4.0",
     codename: "Mission Control",
     date: "2026-06-23",
-    summary: "A new Platform bay in the Flight Console.",
+    summary: "A new Platform bay in Mission Control.",
     changes: [
-      "Added a Platform section to the Flight Console with Customize, Changelog, and Donate in one place.",
+      "Added a Platform section to Mission Control with Customize, Changelog, and Donate in one place.",
       "Customize now has its own panel — search for any scientist and the galaxy rebuilds around their work (moved out of the Info drawer).",
     ],
   },

@@ -8,7 +8,7 @@ import { LEGEND, NAV_MODES } from "@/lib/legend";
 
 export function InfoDrawer() {
   const { infoOpen, setInfoOpen, setChangelogOpen, consoleOpen } = useAppState();
-  // Sit to the LEFT of the right-hand Flight Console instead of under it: offset
+  // Sit to the LEFT of the right-hand Mission Control instead of under it: offset
   // by the live console width (expanded vs collapsed rail) and cap our own width
   // so we never overflow the remaining space.
   const consoleW = consoleOpen ? "min(14rem,80vw)" : "3.5rem";

@@ -117,7 +117,7 @@ export function Sidebar() {
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between gap-2 border-b-2 border-edge px-3 py-2">
               <span className="font-display text-xs uppercase tracking-wider text-ink">
-                Flight Console
+                Mission Control
               </span>
               <button
                 onClick={() => setOpen(false)}
