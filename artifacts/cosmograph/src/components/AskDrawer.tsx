@@ -78,11 +78,8 @@ export function AskDrawer() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 320, damping: 34 }}
-            style={{
-              right: consoleW,
-              width: `min(34rem, calc(100vw - ${consoleW} - 0.5rem))`,
-            }}
-            className="custom-scrollbar absolute top-0 bottom-0 flex flex-col overflow-y-auto border-l-2 border-edge bg-bg/95 p-7 backdrop-blur-xl"
+            style={{ ["--console-w" as string]: consoleW }}
+            className="custom-scrollbar absolute inset-0 flex flex-col overflow-y-auto border-l-2 border-edge bg-bg/95 p-7 backdrop-blur-xl sm:left-auto sm:right-[var(--console-w)] sm:w-[min(34rem,calc(100vw-var(--console-w)-0.5rem))]"
           >
             <button
               onClick={() => setAskOpen(false)}
