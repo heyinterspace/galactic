@@ -56,7 +56,12 @@ export function ScreenshotGate() {
     // Give the freshly-mounted scene time to load its background texture and
     // settle the camera into the overview before grabbing the frame.
     const timer = window.setTimeout(async () => {
-      const blob = await buildShareCard();
+      let blob: Blob | null = null;
+      try {
+        blob = await buildShareCard();
+      } catch {
+        blob = null;
+      }
       if (cancelled) return;
       blobRef.current = blob;
       if (blob) {
@@ -64,7 +69,8 @@ export function ScreenshotGate() {
         urlRef.current = url;
         setImageUrl(url);
       }
-      // Tear down the live scene now that we have the static image.
+      // Tear down the live scene once the capture attempt completes — whether or
+      // not it produced an image — so the hidden GPU scene never stays mounted.
       setCapturing(false);
     }, 1700);
 
@@ -217,7 +223,7 @@ export function ScreenshotGate() {
                 className="glass-panel glass-panel-interactive flex w-full items-center justify-center gap-2 py-3 font-display text-xs uppercase tracking-widest text-ink"
               >
                 <Rocket size={14} />
-                <span>Sign in to subscribe</span>
+                <span>Subscribe</span>
               </button>
             </Show>
 

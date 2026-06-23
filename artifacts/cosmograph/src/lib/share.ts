@@ -63,24 +63,24 @@ export function getShareText(): string {
   return `Explore ${galaxyData.author.name}'s life in science as an interactive galaxy.`;
 }
 
-// Compose the rich share card: the current galaxy view + headline stats, styled
-// to match the app so it reads as a single branded artifact when shared. Returns
-// a PNG blob (PNG is the format browsers accept for clipboard image writes).
-export async function buildShareCard(): Promise<Blob | null> {
-  const card = document.createElement("canvas");
-  card.width = CARD_W;
-  card.height = CARD_H;
-  const ctx = card.getContext("2d");
-  if (!ctx) return null;
-
-  if (typeof document !== "undefined" && document.fonts?.ready) {
+// Encode a 2D canvas to a PNG blob without ever throwing. A canvas tainted by a
+// cross-origin source makes toBlob throw synchronously — we swallow that and
+// resolve null so the caller can fall back instead of hanging on a rejection.
+function toBlobSafe(card: HTMLCanvasElement): Promise<Blob | null> {
+  return new Promise((resolve) => {
     try {
-      await document.fonts.ready;
+      card.toBlob((b) => resolve(b), "image/png");
     } catch {
-      /* fonts API unavailable — fall back to whatever is loaded */
+      resolve(null);
     }
-  }
+  });
+}
 
+// Paint the branded card: optionally the live galaxy view, then the scrims,
+// wordmark, researcher name, and headline stats. Drawing the WebGL canvas can
+// taint the 2D card (a cross-origin texture in the scene), which is why
+// `includeGalaxy` exists — buildShareCard re-renders without it as a fallback.
+function drawCard(ctx: CanvasRenderingContext2D, includeGalaxy: boolean): void {
   const bg = cssVar("--bg", "#272933");
   const ink = cssVar("--ink", "#e6e6e6");
   const dim = cssVar("--ink-dim", "#9da0ab");
@@ -91,7 +91,7 @@ export async function buildShareCard(): Promise<Blob | null> {
   ctx.fillRect(0, 0, CARD_W, CARD_H);
 
   // The galaxy itself, cover-fit so it fills the card edge to edge.
-  if (galaxyCanvas && galaxyCanvas.width > 0 && galaxyCanvas.height > 0) {
+  if (includeGalaxy && galaxyCanvas && galaxyCanvas.width > 0 && galaxyCanvas.height > 0) {
     const src = galaxyCanvas;
     const scale = Math.max(CARD_W / src.width, CARD_H / src.height);
     const dw = src.width * scale;
@@ -178,10 +178,45 @@ export async function buildShareCard(): Promise<Blob | null> {
   ctx.textAlign = "right";
   ctx.fillText(SITE.domain, CARD_W - PAD, CARD_H - 50);
   ctx.textAlign = "left";
+}
 
-  return new Promise<Blob | null>((resolve) => {
-    card.toBlob((b) => resolve(b), "image/png");
-  });
+function newCard(): HTMLCanvasElement {
+  const card = document.createElement("canvas");
+  card.width = CARD_W;
+  card.height = CARD_H;
+  return card;
+}
+
+// Compose the rich share card: the current galaxy view + headline stats, styled
+// to match the app so it reads as a single branded artifact when shared. Returns
+// a PNG blob (PNG is the format browsers accept for clipboard image writes).
+//
+// Two-pass so a share NEVER silently produces nothing: first try with the live
+// galaxy composited in; if that canvas is tainted/unencodable, recompose the
+// branded stats card WITHOUT the galaxy so there's always an image.
+export async function buildShareCard(): Promise<Blob | null> {
+  if (typeof document !== "undefined" && document.fonts?.ready) {
+    try {
+      await document.fonts.ready;
+    } catch {
+      /* fonts API unavailable — fall back to whatever is loaded */
+    }
+  }
+
+  const withGalaxy = newCard();
+  const ctx = withGalaxy.getContext("2d");
+  if (!ctx) return null;
+  drawCard(ctx, true);
+  const blob = await toBlobSafe(withGalaxy);
+  if (blob) return blob;
+
+  // Fallback: the live galaxy tainted the card (or encoding failed) — render the
+  // branded card on its own so the visitor still gets a shareable image.
+  const plain = newCard();
+  const pctx = plain.getContext("2d");
+  if (!pctx) return null;
+  drawCard(pctx, false);
+  return toBlobSafe(plain);
 }
 
 /** Download the rendered card image as a PNG file. */

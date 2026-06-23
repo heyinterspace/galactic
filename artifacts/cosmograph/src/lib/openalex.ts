@@ -69,12 +69,23 @@ export interface AuthorCandidate {
   orcid: string | null;
 }
 
+// An OpenAlex request that failed with an HTTP status. Carries the status so
+// callers can tell a rate-limit (429) apart from a generic network error.
+export class OpenAlexError extends Error {
+  status: number;
+  constructor(status: number) {
+    super(`OpenAlex HTTP ${status}`);
+    this.name = "OpenAlexError";
+    this.status = status;
+  }
+}
+
 async function getJSON<T>(url: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(url, {
     signal,
     headers: { Accept: "application/json" },
   });
-  if (!res.ok) throw new Error(`OpenAlex HTTP ${res.status}`);
+  if (!res.ok) throw new OpenAlexError(res.status);
   return res.json() as Promise<T>;
 }
 

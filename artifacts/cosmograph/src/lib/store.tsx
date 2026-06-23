@@ -226,8 +226,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       if (loadReqRef.current !== reqId) return;
       setDatasetStatus('error');
+      const status = (err as { status?: number })?.status;
       setDatasetError(
-        err instanceof Error ? err.message : 'Could not load this scientist from OpenAlex.',
+        status === 429
+          ? 'OpenAlex is rate-limiting requests right now — please try again in a little while.'
+          : err instanceof Error
+            ? err.message
+            : 'Could not load this scientist from OpenAlex.',
       );
       setLoadProgress(null);
     }

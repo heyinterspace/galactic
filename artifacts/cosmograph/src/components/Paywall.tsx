@@ -126,7 +126,7 @@ export function Paywall() {
                   className="glass-panel glass-panel-interactive flex items-center justify-center gap-2 w-full py-3 font-display text-xs uppercase tracking-widest text-ink"
                 >
                   <Rocket size={14} />
-                  <span>Sign in to subscribe</span>
+                  <span>Subscribe</span>
                 </button>
               </Show>
 

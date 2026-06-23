@@ -1,6 +1,6 @@
 import { Show, UserButton } from "@clerk/react";
 import { useLocation } from "wouter";
-import { LogIn, ShieldCheck, Sparkles } from "lucide-react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { Tooltip, TooltipTrigger, TooltipContent } from "./ui/tooltip";
 
@@ -18,10 +18,10 @@ export function AccountIndicator() {
         <button
           type="button"
           onClick={() => setLocation("/sign-in")}
-          className="flex w-full items-center gap-2 border-2 border-edge bg-white/5 px-3 py-2 text-[11px] font-display uppercase tracking-wider text-ink transition-all hover:bg-white/10"
+          className="flex w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 py-2 text-[11px] font-display uppercase tracking-wider text-white transition-all hover:bg-accent/30"
         >
-          <LogIn size={14} />
-          Sign in
+          <Sparkles size={14} />
+          Subscribe
         </button>
       </Show>
 
@@ -53,11 +53,11 @@ export function AccountIndicatorRail() {
           <TooltipTrigger asChild>
             <button
               type="button"
-              aria-label="Sign in"
+              aria-label="Subscribe"
               onClick={() => setLocation("/sign-in")}
-              className="flex h-9 w-9 items-center justify-center border-2 border-edge bg-white/5 text-ink transition-all hover:bg-white/10"
+              className="flex h-9 w-9 items-center justify-center border-2 border-accent bg-accent/20 text-white transition-all hover:bg-accent/30"
             >
-              <LogIn size={15} />
+              <Sparkles size={15} />
             </button>
           </TooltipTrigger>
           <TooltipContent
@@ -65,7 +65,7 @@ export function AccountIndicatorRail() {
             sideOffset={8}
             className="rounded-none border-2 border-edge bg-black/90 px-2 py-1 font-display text-[10px] uppercase tracking-wider text-ink"
           >
-            Sign in
+            Subscribe
           </TooltipContent>
         </Tooltip>
       </Show>

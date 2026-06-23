@@ -17,6 +17,20 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.9.0",
+    codename: "Clear Skies",
+    date: "2026-06-23",
+    summary: "Console polish, clearer Subscribe + Sponsor actions, and steadier sharing.",
+    changes: [
+      "Tightened the spacing under the Mission Control header so Platform sits up closer to the top.",
+      "Personalize now shows its $7/yr price instead of a Premium badge, with the helper line moved below the button.",
+      "The console's Sign In action is now a clear Subscribe button — subscribing signs you in along the way.",
+      "Renamed Donate to Sponsor, with a heart on the left and the GitHub mark on the right.",
+      "Shareable screenshots are more reliable — the card always renders, falling back to the branded stats card if the live view can't be captured.",
+      "Clearer messaging when OpenAlex is rate-limiting scientist search.",
+    ],
+  },
+  {
     version: "3.8.0",
     codename: "Celestial Globe",
     date: "2026-06-23",

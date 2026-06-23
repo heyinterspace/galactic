@@ -13,11 +13,10 @@ import {
   ChevronDown,
   Heart,
   Lock,
-  ExternalLink,
+  Github,
   LayoutGrid,
   Rocket,
   Telescope,
-  Crown,
 } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { isFiltersActive } from "@/data/galaxy";
@@ -93,6 +92,7 @@ export function Sidebar() {
                 title="Platform"
                 isOpen={openSections.platform}
                 onToggle={() => toggleSection("platform")}
+                flush
               >
                 <div className="flex flex-col gap-1.5">
                   <ConsoleButton
@@ -110,16 +110,16 @@ export function Sidebar() {
                     href={SITE.github.sponsors}
                     target="_blank"
                     rel="noopener noreferrer"
-                    title="Support development via GitHub Sponsors (opens in a new tab)"
+                    title="Sponsor development via GitHub Sponsors (opens in a new tab)"
                     className="flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
                   >
                     <Heart size={14} className="shrink-0 text-white" />
                     <span className="font-display text-[11px] uppercase tracking-wider">
-                      Donate
+                      Sponsor
                     </span>
-                    <ExternalLink
-                      size={12}
-                      className="ml-auto shrink-0 text-white/60"
+                    <Github
+                      size={14}
+                      className="ml-auto shrink-0 text-white/70"
                     />
                   </a>
                   <ConsoleButton
@@ -134,11 +134,8 @@ export function Sidebar() {
                     label="Ask"
                   />
 
-                  {/* Personalize — premium */}
+                  {/* Personalize — paid */}
                   <div className="flex flex-col gap-2 border-t-2 border-edge pt-3">
-                    <p className="text-[11px] leading-relaxed text-ink-dim">
-                      Choose scientist for cosmograph
-                    </p>
                     <button
                       type="button"
                       onClick={() => setCustomizeOpen(true)}
@@ -148,10 +145,13 @@ export function Sidebar() {
                       <span className="font-display text-[11px] uppercase tracking-wider">
                         Personalize
                       </span>
-                      <span className="ml-auto flex shrink-0 items-center gap-1 font-mono text-[9px] uppercase tracking-widest text-white/80">
-                        <Crown size={11} /> Premium
+                      <span className="ml-auto shrink-0 font-mono text-[10px] tracking-wider text-white/90">
+                        $7/yr
                       </span>
                     </button>
+                    <p className="text-[11px] leading-relaxed text-ink-dim">
+                      Choose scientist for cosmograph
+                    </p>
                   </div>
                 </div>
               </CollapsibleSection>
@@ -227,12 +227,12 @@ export function Sidebar() {
             <RailButton onClick={() => setChangelogOpen(true)} label="Changelog">
               <Rocket size={15} />
             </RailButton>
-            <RailTip label="Donate">
+            <RailTip label="Sponsor">
               <a
                 href={SITE.github.sponsors}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Donate via GitHub Sponsors (opens in a new tab)"
+                aria-label="Sponsor via GitHub Sponsors (opens in a new tab)"
                 className="relative flex h-9 w-9 items-center justify-center border-2 border-accent bg-accent/20 text-white transition-all hover:bg-accent/30"
               >
                 <Heart size={15} />
@@ -244,15 +244,15 @@ export function Sidebar() {
                 <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-accent ring-2 ring-black" />
               )}
             </RailButton>
-            <RailTip label="Personalize · Premium">
+            <RailTip label="Personalize · $7/yr">
               <button
                 type="button"
                 onClick={() => setCustomizeOpen(true)}
                 className="relative flex h-9 w-9 items-center justify-center border-2 border-accent bg-accent/20 text-white transition-all hover:bg-accent/30"
               >
                 <Telescope size={15} />
-                <span className="absolute -top-1.5 -right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-accent text-black ring-2 ring-black">
-                  <Crown size={8} />
+                <span className="absolute -top-1.5 -right-1.5 grid h-4 w-4 place-items-center rounded-full bg-accent font-mono text-[8px] font-bold leading-none text-black ring-2 ring-black">
+                  $
                 </span>
               </button>
             </RailTip>
@@ -335,15 +335,17 @@ function CollapsibleSection({
   isOpen,
   onToggle,
   children,
+  flush = false,
 }: {
   icon?: React.ReactNode;
   title: string;
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
+  flush?: boolean;
 }) {
   return (
-    <div className="border-t-2 border-edge pt-3">
+    <div className={flush ? "" : "border-t-2 border-edge pt-3"}>
       <button
         type="button"
         onClick={onToggle}

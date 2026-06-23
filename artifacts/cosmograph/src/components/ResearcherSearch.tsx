@@ -34,9 +34,14 @@ export function ResearcherSearch() {
           setResults(r);
           setError(null);
         }
-      } catch {
+      } catch (e) {
         if (!ac.signal.aborted) {
-          setError("Search failed — check your connection and try again.");
+          const status = (e as { status?: number })?.status;
+          setError(
+            status === 429
+              ? "OpenAlex is rate-limiting search right now — please try again in a little while."
+              : "Search failed — check your connection and try again.",
+          );
           setResults([]);
         }
       } finally {
