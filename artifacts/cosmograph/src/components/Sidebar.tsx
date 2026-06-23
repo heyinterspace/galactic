@@ -672,18 +672,29 @@ function AskPanel({
     }
   };
 
-  const send = () => {
-    const text = input.trim();
+  const submit = (raw: string) => {
+    const text = raw.trim();
     if (!text || busy) return;
     setInput("");
     const id = ++turnId.current;
     void ask(text, id);
   };
 
+  const send = () => submit(input);
+
   const clear = () => {
     setTurns([]);
     resetFilters();
   };
+
+  // Starter prompts shown before the first question — one is seeded from the
+  // active scientist's top research domain so it stays relevant after a swap.
+  const suggestions = useMemo(() => {
+    const chips = ["Most cited papers", "Papers since 2015", "Over 100 citations"];
+    const topDomain = galaxyData.domains[0]?.name;
+    if (topDomain) chips.splice(1, 0, `Work on ${topDomain}`);
+    return chips;
+  }, []);
 
   return (
     <div className="flex flex-col gap-3">
@@ -715,12 +726,27 @@ function AskPanel({
       </div>
 
       {turns.length === 0 ? (
-        <p className="px-1 text-xs leading-relaxed text-ink-dim">
-          Try “most cited papers”, “work on stem cells since 2010”, or “how many
-          papers with more than 100 citations”. Answers are computed from the
-          baked data — never invented. Spotted a bug or have an idea? Just say so
-          (e.g. “I want to report a bug…”) and I'll file it with the team.
-        </p>
+        <div className="flex flex-col gap-2 px-0.5">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-ink-dim">
+            Try asking
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {suggestions.map((s) => (
+              <button
+                key={s}
+                onClick={() => submit(s)}
+                disabled={busy}
+                className="border-2 border-edge bg-white/5 px-2.5 py-1 text-[11px] text-ink-dim transition-colors hover:border-accent hover:text-ink disabled:opacity-40"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+          <span className="text-[10px] leading-relaxed text-ink-dim/70">
+            Answers are computed from the data, never invented. You can also report
+            a bug or request a feature here.
+          </span>
+        </div>
       ) : (
         <div className="flex items-center justify-between">
           <span className="font-mono text-[11px] uppercase tracking-widest text-ink-dim">
