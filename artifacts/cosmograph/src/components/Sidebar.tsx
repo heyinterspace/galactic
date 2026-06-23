@@ -17,6 +17,7 @@ import {
   LayoutGrid,
   Rocket,
   Telescope,
+  Crown,
 } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { isFiltersActive } from "@/data/galaxy";
@@ -86,20 +87,7 @@ export function Sidebar() {
 
             {/* Scroll body */}
             <div className="flex flex-col gap-4 overflow-y-auto custom-scrollbar p-3">
-              {/* Ask — pinned at the top, the primary query action */}
-              <ConsoleButton
-                active={filtersActive}
-                onClick={() => setAskOpen(true)}
-                icon={
-                  <MessageCircleStar
-                    size={14}
-                    className={filtersActive ? "text-accent" : undefined}
-                  />
-                }
-                label="Ask"
-              />
-
-              {/* Platform — info, account & meta, pinned up top */}
+              {/* Platform — info, account, meta & primary actions */}
               <CollapsibleSection
                 icon={<LayoutGrid size={15} />}
                 title="Platform"
@@ -134,17 +122,36 @@ export function Sidebar() {
                       className="ml-auto shrink-0 text-white/60"
                     />
                   </a>
+                  <ConsoleButton
+                    active={filtersActive}
+                    onClick={() => setAskOpen(true)}
+                    icon={
+                      <MessageCircleStar
+                        size={14}
+                        className={filtersActive ? "text-accent" : undefined}
+                      />
+                    }
+                    label="Ask"
+                  />
 
-                  {/* Personalize */}
+                  {/* Personalize — premium */}
                   <div className="flex flex-col gap-2 border-t-2 border-edge pt-3">
                     <p className="text-[11px] leading-relaxed text-ink-dim">
-                      Personalize your cosmograph
+                      Choose scientist for cosmograph
                     </p>
-                    <ConsoleButton
+                    <button
+                      type="button"
                       onClick={() => setCustomizeOpen(true)}
-                      icon={<Telescope size={14} />}
-                      label="Choose scientist"
-                    />
+                      className="flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
+                    >
+                      <Telescope size={14} className="shrink-0 text-white" />
+                      <span className="font-display text-[11px] uppercase tracking-wider">
+                        Personalize
+                      </span>
+                      <span className="ml-auto flex shrink-0 items-center gap-1 font-mono text-[9px] uppercase tracking-widest text-white/80">
+                        <Crown size={11} /> Premium
+                      </span>
+                    </button>
                   </div>
                 </div>
               </CollapsibleSection>
@@ -212,15 +219,7 @@ export function Sidebar() {
               <ChevronLeft size={16} />
             </RailButton>
             <Divider />
-            {/* Ask — primary query action */}
-            <RailButton active={filtersActive} onClick={() => setAskOpen(true)} label="Ask">
-              <MessageCircleStar size={15} />
-              {filtersActive && (
-                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-accent ring-2 ring-black" />
-              )}
-            </RailButton>
-            <Divider />
-            {/* Platform — info, account & meta */}
+            {/* Platform — info, account, meta & primary actions */}
             <RailButton onClick={() => setInfoOpen(true)} label="Info">
               <Info size={16} />
             </RailButton>
@@ -239,9 +238,24 @@ export function Sidebar() {
                 <Heart size={15} />
               </a>
             </RailTip>
-            <RailButton onClick={() => setCustomizeOpen(true)} label="Personalize">
-              <Telescope size={15} />
+            <RailButton active={filtersActive} onClick={() => setAskOpen(true)} label="Ask">
+              <MessageCircleStar size={15} />
+              {filtersActive && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-accent ring-2 ring-black" />
+              )}
             </RailButton>
+            <RailTip label="Personalize · Premium">
+              <button
+                type="button"
+                onClick={() => setCustomizeOpen(true)}
+                className="relative flex h-9 w-9 items-center justify-center border-2 border-accent bg-accent/20 text-white transition-all hover:bg-accent/30"
+              >
+                <Telescope size={15} />
+                <span className="absolute -top-1.5 -right-1.5 grid h-3.5 w-3.5 place-items-center rounded-full bg-accent text-black ring-2 ring-black">
+                  <Crown size={8} />
+                </span>
+              </button>
+            </RailTip>
             <Divider />
             {/* Share */}
             <RailTip label="GitHub">

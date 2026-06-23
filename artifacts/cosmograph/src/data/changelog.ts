@@ -31,8 +31,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     date: "2026-06-23",
     summary: "Mission Control gets a cleaner layout — Platform sits up top.",
     changes: [
-      "Reorganized the console: a single Platform section now sits at the top with Info, Sign In, Changelog, Donate, and Personalize all in one place.",
-      "Renamed the old Customize section to Personalize — 'Choose scientist' to open up someone new.",
+      "Reorganized the console: a single Platform section now sits at the top with Info, Sign In, Changelog, Donate, Ask, and Personalize all in one place.",
+      "Renamed the old Customize section to Personalize — a highlighted premium action to choose a scientist for your own cosmograph.",
     ],
   },
   {
