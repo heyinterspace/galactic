@@ -100,11 +100,16 @@ export function ScreenshotGate() {
         className="absolute left-4 top-4 z-10 flex items-center gap-2 border-2 border-edge bg-black/40 px-3 py-2 font-display text-[10px] uppercase tracking-widest text-ink-dim backdrop-blur-sm transition-colors hover:bg-black/60 hover:text-ink"
       >
         <ArrowLeft size={13} />
-        Free home galaxy
+        Back
       </button>
 
-      <div className="relative z-10 flex h-full w-full items-center justify-center overflow-y-auto custom-scrollbar p-4">
+      {/* Clicking anywhere outside the panel returns to the free home galaxy. */}
+      <div
+        onClick={goHome}
+        className="relative z-10 flex h-full w-full items-center justify-center overflow-y-auto custom-scrollbar p-4"
+      >
         <motion.div
+          onClick={(e) => e.stopPropagation()}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
