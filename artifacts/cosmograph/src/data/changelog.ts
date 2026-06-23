@@ -17,6 +17,16 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.2.0",
+    codename: "One Console",
+    date: "2026-06-23",
+    summary: "Ask does it all — and feedback flies through the same chat.",
+    changes: [
+      "Retired the separate Find box — Ask now handles jumping to papers and domains alongside questions.",
+      "Report a bug or request a feature right inside the Ask chat: switch modes, type, and it's filed straight to the team.",
+    ],
+  },
+  {
     version: "3.1.0",
     codename: "Orbital Pass",
     date: "2026-06-23",

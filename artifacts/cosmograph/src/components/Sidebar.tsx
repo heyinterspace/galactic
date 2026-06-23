@@ -1,9 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Search,
-  Sun,
-  Globe2,
   X,
   Info,
   Orbit,
@@ -49,21 +46,11 @@ import {
   TooltipProvider,
 } from "./ui/tooltip";
 
-interface SearchResult {
-  type: "sun" | "planet";
-  id: string;
-  title: string;
-  subtitle: string;
-}
-
-type SearchIndexItem = SearchResult & { haystack: string };
-
 export function Sidebar() {
   const {
     setCameraMode,
     cameraMode,
     setSelectedObject,
-    setSearchActive,
     filters,
     setInfoOpen,
     replayIntro,
@@ -73,10 +60,7 @@ export function Sidebar() {
     setConsoleOpen: setOpen,
   } = useAppState();
 
-  const [query, setQuery] = useState("");
   const { openSections, toggleSection } = useSectionState();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const focusOnOpen = useRef(false);
 
   // Built from live galaxyData at mount; the whole Sidebar remounts on a dataset
   // swap (key={datasetVersion}), so these stay in sync with the active scientist.
@@ -91,25 +75,6 @@ export function Sidebar() {
       ),
     [],
   );
-  const searchIndex = useMemo<SearchIndexItem[]>(
-    () => [
-      ...galaxyData.domains.map((d) => ({
-        type: "sun" as const,
-        id: d.id,
-        title: d.name,
-        subtitle: `Domain · ${d.paperCount} papers`,
-        haystack: `${d.name} ${d.field}`.toLowerCase(),
-      })),
-      ...galaxyData.papers.map((p) => ({
-        type: "planet" as const,
-        id: p.id,
-        title: p.title,
-        subtitle: `${p.year ?? ""} · ${p.citations.toLocaleString()} citations`,
-        haystack: `${p.title} ${p.coAuthors.join(" ")} ${p.year ?? ""}`.toLowerCase(),
-      })),
-    ],
-    [],
-  );
 
   const filtersActive = isFiltersActive(filters);
   const totalPapers = galaxyData.papers.length;
@@ -118,47 +83,11 @@ export function Sidebar() {
     [filters, filtersActive, totalPapers],
   );
 
-  const results: SearchResult[] = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (q.length < 2) return [];
-    const out: SearchResult[] = [];
-    for (const item of searchIndex) {
-      if (item.haystack.includes(q)) {
-        out.push({ type: item.type, id: item.id, title: item.title, subtitle: item.subtitle });
-        if (out.length >= 14) break;
-      }
-    }
-    return out;
-  }, [query, searchIndex]);
-
-  useEffect(() => {
-    setSearchActive(results.length > 0);
-  }, [results.length, setSearchActive]);
-
-  useEffect(() => () => setSearchActive(false), [setSearchActive]);
-
-  useEffect(() => {
-    if (open && focusOnOpen.current) {
-      inputRef.current?.focus();
-      focusOnOpen.current = false;
-    }
-  }, [open]);
-
-  const pick = (r: SearchResult) => {
-    setCameraMode("god");
-    setSelectedObject({ type: r.type, id: r.id });
-    setQuery("");
-    inputRef.current?.blur();
-  };
   const pickPaper = (id: string) => {
     setCameraMode("god");
     setSelectedObject({ type: "planet", id });
   };
 
-  const expandWithSearch = () => {
-    focusOnOpen.current = true;
-    setOpen(true);
-  };
   const expandWithAsk = () => {
     setOpen(true);
   };
@@ -275,59 +204,6 @@ export function Sidebar() {
                 </div>
               </CollapsibleSection>
 
-              {/* Find — quick jump search */}
-              <CollapsibleSection
-                icon={<Search size={15} className="text-ink-dim" />}
-                title="Find"
-                isOpen={openSections.find}
-                onToggle={() => toggleSection("find")}
-              >
-                <div>
-                  <div className="flex items-center gap-2 border-2 border-edge bg-white/5 px-2 focus-within:border-accent">
-                    <Search size={15} className="shrink-0 text-ink-dim" />
-                    <input
-                      ref={inputRef}
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      placeholder="Jump to a paper or domain…"
-                      className="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink placeholder:text-ink-dim/70 focus:outline-none"
-                    />
-                    {query && (
-                      <button
-                        onClick={() => setQuery("")}
-                        className="shrink-0 text-ink-dim hover:text-ink"
-                        aria-label="Clear search"
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
-                  </div>
-                  {results.length > 0 && (
-                    <div className="mt-1.5 max-h-[34vh] overflow-y-auto custom-scrollbar border-2 border-edge">
-                      {results.map((r) => (
-                        <button
-                          key={`${r.type}-${r.id}`}
-                          onClick={() => pick(r)}
-                          className="flex w-full items-center gap-2.5 border-b border-white/8 px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-accent/15"
-                        >
-                          {r.type === "sun" ? (
-                            <Sun size={14} className="shrink-0 text-accent" />
-                          ) : (
-                            <Globe2 size={14} className="shrink-0 text-ink-dim" />
-                          )}
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm text-ink">{r.title}</span>
-                            <span className="block truncate font-mono text-[10px] uppercase tracking-wider text-ink-dim">
-                              {r.subtitle}
-                            </span>
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CollapsibleSection>
-
               {/* Ask the galaxy */}
               <CollapsibleSection
                 icon={
@@ -413,10 +289,7 @@ export function Sidebar() {
               <Rewind size={16} />
             </RailButton>
             <Divider />
-            {/* Find + Ask */}
-            <RailButton onClick={expandWithSearch} label="Find">
-              <Search size={16} />
-            </RailButton>
+            {/* Ask */}
             <RailButton active={filtersActive} onClick={expandWithAsk} label="Ask">
               <MessageCircleQuestion size={15} />
               {filtersActive && (
@@ -431,14 +304,13 @@ export function Sidebar() {
   );
 }
 
-type SectionKey = "account" | "share" | "navigate" | "find" | "ask";
+type SectionKey = "account" | "share" | "navigate" | "ask";
 
 const SECTION_STORAGE_KEY = "galaxy.console.sections";
 const DEFAULT_SECTIONS: Record<SectionKey, boolean> = {
   account: true,
   share: true,
   navigate: true,
-  find: true,
   ask: true,
 };
 
@@ -637,22 +509,29 @@ const ASK_FIELDS = [
   { name: "coAuthorCount", type: "number", description: "Number of collaborators." },
 ] as const;
 
-// A single Q&A turn. The answer text and papers are computed deterministically
-// by runAskQuery — the model never returns numbers or paper lists.
+type AskMode = "ask" | "bug" | "feature";
+
+// A single conversation turn. For "ask" turns the answer + papers are computed
+// deterministically by runAskQuery (the model never returns numbers or lists).
+// For "bug"/"feature" turns the message is filed to Linear and the turn carries
+// the resulting issue link.
 interface AskTurn {
   id: number;
+  mode: AskMode;
   question: string;
   status: "ok" | "unsupported" | "error";
   answer: string;
   papers: Paper[];
   count: number;
+  issueUrl?: string;
+  issueNumber?: number;
 }
 
 // Compose the answer text from the locally-computed result. ALL numbers here
 // come from `r` (the deterministic run), not from the model.
 function composeAnswer(q: AskQuery, r: AskResult): string {
   if (q.unsupported) {
-    return "I can only answer questions about this scientist's papers — try topics, years, citation counts, or co-authors. If something's missing, report it below.";
+    return "I can only answer questions about this scientist's papers — try topics, years, citation counts, or co-authors. If something's missing, switch to Bug or Feature above to tell the team.";
   }
   if (r.count === 0) {
     return `No papers match that — searched all ${r.total}.`;
@@ -676,30 +555,30 @@ function AskPanel({
   onPickPaper: (id: string) => void;
 }) {
   const { setFilters, resetFilters } = useAppState();
+  const [mode, setMode] = useState<AskMode>("ask");
   const [input, setInput] = useState("");
   const [turns, setTurns] = useState<AskTurn[]>([]);
   const turnId = useRef(0);
   const translate = useTranslateAsk();
+  const report = useReportFeedback();
 
   const domainNames = useMemo(() => galaxyData.domains.map((d) => d.name), []);
+  const busy = translate.isPending || report.isPending;
 
-  const ask = async () => {
-    const question = input.trim();
-    if (!question || translate.isPending) return;
-    setInput("");
-    const id = ++turnId.current;
+  // Ask mode: translate → run the deterministic query → light up matches.
+  const runAsk = async (question: string, id: number) => {
     try {
       const spec = await translate.mutateAsync({
         data: { question, fields: [...ASK_FIELDS], domains: domainNames },
       });
       const result = runAskQuery(spec);
-      // Drive the existing dim/highlight path: matched papers light up.
       if (spec.unsupported) resetFilters();
       else setFilters(result.filters);
       setTurns((prev) => [
         ...prev,
         {
           id,
+          mode: "ask",
           question,
           status: spec.unsupported ? "unsupported" : "ok",
           answer: composeAnswer(spec, result),
@@ -712,6 +591,7 @@ function AskPanel({
         ...prev,
         {
           id,
+          mode: "ask",
           question,
           status: "error",
           answer: "Couldn't reach the translator just now. Please try again.",
@@ -722,32 +602,94 @@ function AskPanel({
     }
   };
 
+  // Bug/Feature mode: file the message straight to Linear, link the issue.
+  const runReport = async (kind: "bug" | "feature", message: string, id: number) => {
+    try {
+      const issue = await report.mutateAsync({ data: { kind, message } });
+      setTurns((prev) => [
+        ...prev,
+        {
+          id,
+          mode: kind,
+          question: message,
+          status: "ok",
+          answer:
+            kind === "bug"
+              ? "Thanks — filed as a bug report. The team will take a look."
+              : "Thanks — filed as a feature request. The team will take a look.",
+          papers: [],
+          count: 0,
+          issueUrl: issue.url,
+          issueNumber: issue.number,
+        },
+      ]);
+    } catch {
+      setTurns((prev) => [
+        ...prev,
+        {
+          id,
+          mode: kind,
+          question: message,
+          status: "error",
+          answer: "Couldn't file that just now. Please try again later.",
+          papers: [],
+          count: 0,
+        },
+      ]);
+    }
+  };
+
+  const send = () => {
+    const text = input.trim();
+    if (!text || busy) return;
+    setInput("");
+    const id = ++turnId.current;
+    if (mode === "ask") void runAsk(text, id);
+    else void runReport(mode, text, id);
+  };
+
   const clear = () => {
     setTurns([]);
     resetFilters();
   };
 
+  const placeholder =
+    mode === "ask"
+      ? "Ask about this work…"
+      : mode === "bug"
+        ? "Describe the bug — steps to reproduce help…"
+        : "Describe the feature you'd like…";
+
+  const InputIcon = mode === "ask" ? Sparkles : mode === "bug" ? Bug : Lightbulb;
+
   return (
     <div className="flex flex-col gap-3">
-      {/* Ask input */}
+      {/* Mode pills — Ask the galaxy, or send a bug / feature report */}
+      <div className="grid grid-cols-3 gap-1.5">
+        <ModePill active={mode === "ask"} onClick={() => setMode("ask")} icon={<Sparkles size={12} />} label="Ask" />
+        <ModePill active={mode === "bug"} onClick={() => setMode("bug")} icon={<Bug size={12} />} label="Bug" />
+        <ModePill active={mode === "feature"} onClick={() => setMode("feature")} icon={<Lightbulb size={12} />} label="Feature" />
+      </div>
+
+      {/* Input */}
       <div className="flex items-center gap-2 border-2 border-edge bg-white/5 px-2 focus-within:border-accent">
-        <Sparkles size={15} className="shrink-0 text-accent" />
+        <InputIcon size={15} className="shrink-0 text-accent" />
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") ask();
+            if (e.key === "Enter") send();
           }}
-          placeholder="Ask about this work…"
+          placeholder={placeholder}
           className="min-w-0 flex-1 bg-transparent py-2 text-sm text-ink placeholder:text-ink-dim/70 focus:outline-none"
         />
         <button
-          onClick={ask}
-          disabled={!input.trim() || translate.isPending}
-          aria-label="Ask"
+          onClick={send}
+          disabled={!input.trim() || busy}
+          aria-label={mode === "ask" ? "Ask" : "Send report"}
           className="shrink-0 text-ink-dim transition-colors hover:text-accent disabled:opacity-40"
         >
-          {translate.isPending ? (
+          {busy ? (
             <Loader2 size={16} className="animate-spin" />
           ) : (
             <SendHorizontal size={16} />
@@ -757,9 +699,11 @@ function AskPanel({
 
       {turns.length === 0 ? (
         <p className="px-1 text-xs leading-relaxed text-ink-dim">
-          Try “most cited papers”, “work on stem cells since 2010”, or “how many
-          papers with more than 100 citations”. Answers are computed from the
-          baked data — never invented.
+          {mode === "ask"
+            ? "Try “most cited papers”, “work on stem cells since 2010”, or “how many papers with more than 100 citations”. Answers are computed from the baked data — never invented. Switch to Bug or Feature to send feedback to the team."
+            : mode === "bug"
+              ? "Spotted something broken? Describe it and we'll file it for the team."
+              : "Have an idea to make this better? Send it and we'll file it for the team."}
         </p>
       ) : (
         <div className="flex items-center justify-between">
@@ -778,8 +722,14 @@ function AskPanel({
 
       {turns.map((t) => (
         <div key={t.id} className="flex flex-col gap-1.5">
-          {/* Question */}
+          {/* Message */}
           <div className="self-end max-w-[90%] border-2 border-edge bg-accent/15 px-2.5 py-1.5 text-sm text-ink">
+            {t.mode !== "ask" && (
+              <span className="mb-0.5 flex items-center gap-1 font-mono text-[9px] uppercase tracking-widest text-accent">
+                {t.mode === "bug" ? <Bug size={9} /> : <Lightbulb size={9} />}
+                {t.mode === "bug" ? "Bug report" : "Feature request"}
+              </span>
+            )}
             {t.question}
           </div>
           {/* Answer */}
@@ -792,6 +742,17 @@ function AskPanel({
           >
             {t.answer}
           </div>
+          {/* Filed-issue link (bug / feature turns) */}
+          {t.issueUrl && (
+            <a
+              href={t.issueUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 self-start border-2 border-edge bg-white/5 px-2.5 py-1.5 text-[11px] font-display uppercase tracking-wider text-accent transition-colors hover:bg-white/10"
+            >
+              <ExternalLink size={12} /> Filed #{t.issueNumber} — view on Linear
+            </a>
+          )}
           {/* Matching papers */}
           {t.papers.length > 0 && (
             <div className="max-h-[28vh] overflow-y-auto custom-scrollbar border-2 border-edge">
@@ -830,112 +791,34 @@ function AskPanel({
         </div>
       ))}
 
-      <FeedbackForm />
     </div>
   );
 }
 
-// "Report a bug / request a feature" — files a Linear issue via the API.
-function FeedbackForm() {
-  const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<"bug" | "feature">("bug");
-  const [message, setMessage] = useState("");
-  const report = useReportFeedback();
-  const created = report.data;
-
-  const submit = async () => {
-    const msg = message.trim();
-    if (!msg || report.isPending) return;
-    try {
-      await report.mutateAsync({ data: { kind, message: msg } });
-      setMessage("");
-    } catch {
-      /* error surfaced via report.isError below */
-    }
-  };
-
+// Segmented control selecting the chat mode: ask the galaxy, report a bug, or
+// request a feature.
+function ModePill({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) {
   return (
-    <div className="border-t-2 border-edge pt-3">
-      {!open ? (
-        <button
-          onClick={() => setOpen(true)}
-          className="flex w-full items-center gap-2 font-mono text-[11px] uppercase tracking-widest text-ink-dim transition-colors hover:text-ink"
-        >
-          <Bug size={13} /> Report a bug / request a feature
-        </button>
-      ) : (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[11px] uppercase tracking-widest text-ink-dim">
-              Report
-            </span>
-            <button
-              onClick={() => setOpen(false)}
-              aria-label="Close report form"
-              className="text-ink-dim hover:text-ink"
-            >
-              <X size={13} />
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            <button
-              onClick={() => setKind("bug")}
-              aria-pressed={kind === "bug"}
-              style={kind === "bug" ? { background: "var(--accent)" } : undefined}
-              className={`flex items-center justify-center gap-1.5 border-2 border-edge px-2 py-1.5 text-[11px] font-display uppercase tracking-wider transition-all ${
-                kind === "bug" ? "text-accent-foreground" : "bg-white/5 text-ink hover:bg-white/10"
-              }`}
-            >
-              <Bug size={12} /> Bug
-            </button>
-            <button
-              onClick={() => setKind("feature")}
-              aria-pressed={kind === "feature"}
-              style={kind === "feature" ? { background: "var(--accent)" } : undefined}
-              className={`flex items-center justify-center gap-1.5 border-2 border-edge px-2 py-1.5 text-[11px] font-display uppercase tracking-wider transition-all ${
-                kind === "feature" ? "text-accent-foreground" : "bg-white/5 text-ink hover:bg-white/10"
-              }`}
-            >
-              <Lightbulb size={12} /> Feature
-            </button>
-          </div>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows={3}
-            placeholder={
-              kind === "bug"
-                ? "What went wrong? Steps to reproduce help."
-                : "What would you like to see?"
-            }
-            className="resize-none border-2 border-edge bg-white/5 px-2 py-1.5 text-sm text-ink outline-none placeholder:text-ink-dim/70 focus:border-accent"
-          />
-          {created ? (
-            <a
-              href={created.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 border-2 border-edge bg-white/5 px-2 py-1.5 text-[11px] font-display uppercase tracking-wider text-accent transition-colors hover:bg-white/10"
-            >
-              <ExternalLink size={12} /> Filed #{created.number} — view on Linear
-            </a>
-          ) : (
-            <button
-              onClick={submit}
-              disabled={!message.trim() || report.isPending}
-              className="flex items-center justify-center gap-1.5 border-2 border-edge bg-white/5 px-2 py-1.5 text-[11px] font-display uppercase tracking-wider text-ink transition-all hover:bg-white/10 disabled:opacity-40"
-            >
-              {report.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
-              {report.isPending ? "Filing…" : "Submit"}
-            </button>
-          )}
-          {report.isError && (
-            <span className="text-[11px] text-ink-dim">
-              Couldn't file that right now. Please try again later.
-            </span>
-          )}
-        </div>
-      )}
-    </div>
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      style={active ? { background: "var(--accent)" } : undefined}
+      className={`flex items-center justify-center gap-1 border-2 border-edge px-2 py-1.5 text-[10px] font-display uppercase tracking-wider transition-all ${
+        active ? "text-accent-foreground" : "bg-white/5 text-ink hover:bg-white/10"
+      }`}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }

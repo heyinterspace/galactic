@@ -33,8 +33,6 @@ interface AppState {
   setSelectedObject: (obj: SelectedObject) => void;
   hoveredObject: HoveredObject;
   setHoveredObject: (obj: HoveredObject) => void;
-  searchActive: boolean;
-  setSearchActive: (val: boolean) => void;
   galaxyTilt: number;
   setGalaxyTilt: (val: number) => void;
   filters: Filters;
@@ -137,7 +135,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [cameraMode, setCameraModeState] = useState<CameraMode>('god');
   const [selectedObject, setSelectedObject] = useState<SelectedObject>(null);
   const [hoveredObject, setHoveredObject] = useState<HoveredObject>(null);
-  const [searchActive, setSearchActive] = useState<boolean>(false);
   const [galaxyTilt, setGalaxyTilt] = useState<number>(0);
   const [filters, setFiltersState] = useState<Filters>(makeDefaultFilters);
 
@@ -200,7 +197,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       // Drop any selection/hover/tour/filters that referenced the old galaxy.
       setSelectedObject(null);
       setHoveredObject(null);
-      setSearchActive(false);
       setTourActive(false);
       setTourStopIndex(0);
       setCameraModeState('god');
@@ -282,8 +278,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setSelectedObject,
         hoveredObject,
         setHoveredObject,
-        searchActive,
-        setSearchActive,
         galaxyTilt,
         setGalaxyTilt,
         filters,
