@@ -191,7 +191,7 @@ export function ScrollIntro() {
       {/* Swallow stray canvas clicks during the intro */}
       <div className="absolute inset-0 z-30 pointer-events-auto" />
 
-      <Cockpit warpRef={warpRef} />
+      {!atEnd && <Cockpit warpRef={warpRef} />}
 
       {/* Scroll progress rail */}
       {introStarted && !reduced && (
