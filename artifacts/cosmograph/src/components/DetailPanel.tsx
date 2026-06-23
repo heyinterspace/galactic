@@ -113,7 +113,7 @@ function DomainDetail({ id }: { id: string }) {
             className="glass-panel glass-panel-interactive flex items-center justify-center gap-2 w-full py-2.5 text-accent-foreground font-display text-[11px] uppercase tracking-widest"
           >
             <Lock size={13} />
-            <span>Unlock for $10</span>
+            <span>Unlock for $7</span>
           </button>
         </div>
       )}
@@ -166,7 +166,7 @@ function PlanetDetail({ id }: { id: string }) {
             className="glass-panel glass-panel-interactive flex items-center justify-center gap-2 w-full py-2.5 text-accent-foreground font-display text-[11px] uppercase tracking-widest"
           >
             <Lock size={13} />
-            <span>Unlock for $10</span>
+            <span>Unlock for $7</span>
           </button>
         </div>
       )}

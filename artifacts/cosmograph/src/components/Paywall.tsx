@@ -9,7 +9,7 @@ import { useAppState } from "@/lib/store";
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const SPONSOR_URL = "https://github.com/sponsors/heyinterspace";
 
-const PERKS = [
+export const PERKS = [
   "Ask Cosmo — ask questions about any researcher's work, answered from their galaxy",
   "Fly the spaceship through any researcher's galaxy",
   "Take the guided tour of their domains and landmark papers",
@@ -81,7 +81,7 @@ export function Paywall() {
               </div>
               <div>
                 <span className="font-mono text-[10px] uppercase tracking-widest text-accent">
-                  Membership · $10 / year
+                  Membership · $7 / year
                 </span>
                 <h2 className="text-xl font-title font-bold leading-tight tracking-tight text-ink">
                   Explore the full galaxy
@@ -92,7 +92,7 @@ export function Paywall() {
             <p className="mt-3 text-[13px] leading-relaxed text-ink-dim">
               The stats and shareable view for{" "}
               <span className="text-ink">{activeAuthorLabel}</span> are free. A{" "}
-              <span className="text-ink">$10/year</span> membership opens deep
+              <span className="text-ink">$7/year</span> membership opens deep
               exploration for <span className="text-ink">any</span> scientist you
               search — plus Ask Cosmo and every new feature as it ships.
             </p>
@@ -138,7 +138,7 @@ export function Paywall() {
                   <span>
                     {checkout.isPending
                       ? "Starting checkout…"
-                      : "Subscribe · $10/year"}
+                      : "Subscribe · $7/year"}
                   </span>
                 </button>
               </Show>
@@ -155,7 +155,7 @@ export function Paywall() {
             </div>
 
             <p className="mt-3 text-center font-mono text-[10px] leading-relaxed text-ink-dim/70">
-              Secure checkout by Stripe · $10/year, renews annually
+              Secure checkout by Stripe · $7/year, renews annually
             </p>
           </motion.div>
         </motion.div>

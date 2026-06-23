@@ -17,6 +17,17 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.6.0",
+    codename: "Postcard",
+    date: "2026-06-23",
+    summary: "Custom galaxies open as a shareable postcard — membership drops to $7.",
+    changes: [
+      "Searching a scientist now opens their cosmograph as a full-screen shareable screenshot with one tap to copy, download, or share it.",
+      "Membership is now $7/year — subscribe right from the screenshot to unlock the full interactive galaxy for anyone you search.",
+      "The home scientist stays free and fully interactive, no account needed.",
+    ],
+  },
+  {
     version: "3.5.0",
     codename: "Make It Yours",
     date: "2026-06-23",

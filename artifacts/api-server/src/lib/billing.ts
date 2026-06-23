@@ -5,14 +5,14 @@ import { db, usersTable, type User } from "@workspace/db";
 import { clerkClient } from "@clerk/express";
 import { getUncachableStripeClient } from "./stripeClient";
 
-// Account-level membership: a $10/year subscription grants full exploration of
+// Account-level membership: a $7/year subscription grants full exploration of
 // ANY searched scientist plus member-only features (Ask Cosmo, every new
 // feature as it ships). We model it as a boolean on the user (hasPaid = active
 // member), flipped on checkout/renewal and cleared when the subscription ends.
 const MEMBERSHIP_PRODUCT_NAME = "Cosmograph — Full Access";
 const MEMBERSHIP_DESCRIPTION =
   "Yearly membership: fully explore any researcher's galaxy — guided tour, spaceship fly-through, rich paper detail, and Ask Cosmo — plus every new feature as it ships.";
-const MEMBERSHIP_AMOUNT = 1000; // $10.00 / year in cents
+const MEMBERSHIP_AMOUNT = 700; // $7.00 / year in cents
 const MEMBERSHIP_CURRENCY = "usd";
 const MEMBERSHIP_INTERVAL = "year" as const;
 

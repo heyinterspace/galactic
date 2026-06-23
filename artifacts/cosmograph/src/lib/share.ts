@@ -184,6 +184,19 @@ export async function buildShareCard(): Promise<Blob | null> {
   });
 }
 
+/** Download the rendered card image as a PNG file. */
+export function downloadShareCard(blob: Blob): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `cosmograph-${slugify(galaxyData.author.name)}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Revoke on the next tick so the download has a chance to start.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /** Copy the rendered card image to the clipboard. Returns false if unsupported/blocked. */
 export async function copyImageToClipboard(blob: Blob): Promise<boolean> {
   try {

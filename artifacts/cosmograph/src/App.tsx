@@ -14,6 +14,7 @@ import { FlyCockpit } from "@/components/FlyCockpit";
 import { DatasetLoadingOverlay } from "@/components/DatasetLoadingOverlay";
 import { EntitlementBridge } from "@/components/EntitlementBridge";
 import { Paywall } from "@/components/Paywall";
+import { ScreenshotGate } from "@/components/ScreenshotGate";
 
 // REQUIRED — copy verbatim. Resolves the key from window.location.hostname so the
 // same build serves multiple Clerk custom domains. Do not inline the env var, leave
@@ -46,7 +47,8 @@ if (!clerkPubKey) {
 // wrapper so loading a new scientist fully remounts the 3D scene and panels,
 // re-registering all object refs against the freshly rebuilt galaxy.
 function GalaxyView() {
-  const { datasetVersion, consoleOpen, introFinished } = useAppState();
+  const { datasetVersion, consoleOpen, introFinished, canExplore } =
+    useAppState();
   // While the intro/title screen plays the console is hidden entirely, so the
   // galaxy isn't shifted for it. Once the intro finishes: shift by half the
   // console width when open, or by the collapsed rail width (1.75rem) when shut.
@@ -57,21 +59,31 @@ function GalaxyView() {
       : "-1.75rem";
   return (
     <div key={datasetVersion} className="relative h-full w-full overflow-hidden">
-      {/* The 3D galaxy stays full-size and slides aside with a GPU transform when
-          the console expands — instead of resizing the canvas (which reallocates
-          the WebGL + bloom buffers and made the shift snap). The shift recenters
-          the galaxy in the space left of the console: half the console's width. */}
-      <div
-        className="absolute inset-0 transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
-        style={{ transform: `translateX(${galaxyShift})` }}
-      >
-        <Scene />
-      </div>
-      {/* 2D HUD stays put (not translated) so nothing clips off the left edge. */}
-      <FlyCockpit />
-      <Overlay />
-      {/* Console is hidden during the intro so nothing covers the title screen. */}
-      {introFinished && <Sidebar />}
+      {canExplore ? (
+        <>
+          {/* The 3D galaxy stays full-size and slides aside with a GPU transform when
+              the console expands — instead of resizing the canvas (which reallocates
+              the WebGL + bloom buffers and made the shift snap). The shift recenters
+              the galaxy in the space left of the console: half the console's width. */}
+          <div
+            className="absolute inset-0 transition-transform duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
+            style={{ transform: `translateX(${galaxyShift})` }}
+          >
+            <Scene />
+          </div>
+          {/* 2D HUD stays put (not translated) so nothing clips off the left edge. */}
+          <FlyCockpit />
+          <Overlay />
+          {/* Console is hidden during the intro so nothing covers the title screen. */}
+          {introFinished && <Sidebar />}
+        </>
+      ) : (
+        // Non-member on a non-default scientist: the interactive galaxy is
+        // replaced by the screenshot-only paywall gate (capture → static card +
+        // Subscribe CTA). Flips back to the interactive branch the moment the
+        // entitlement lands (canExplore), with no reload.
+        <ScreenshotGate />
+      )}
     </div>
   );
 }
