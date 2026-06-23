@@ -136,25 +136,20 @@ export function Sidebar() {
                   />
 
                   {/* Personalize — paid */}
-                  <div className="flex flex-col gap-2 border-t-2 border-edge pt-3">
-                    <button
-                      type="button"
-                      onClick={() => setCustomizeOpen(true)}
-                      className="flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
-                    >
-                      <Telescope size={14} className="shrink-0 text-white" />
-                      <span className="font-display text-[11px] uppercase tracking-wider">
-                        Personalize
-                      </span>
-                      <span className="ml-auto flex shrink-0 items-center gap-1 font-display text-[10px] uppercase tracking-wider text-white/90">
-                        <Sparkles size={11} className="shrink-0" />
-                        Upgrade
-                      </span>
-                    </button>
-                    <p className="text-[11px] leading-relaxed text-ink-dim">
-                      Choose scientist for cosmograph
-                    </p>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCustomizeOpen(true)}
+                    className="flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
+                  >
+                    <Telescope size={14} className="shrink-0 text-white" />
+                    <span className="font-display text-[11px] uppercase tracking-wider">
+                      Personalize
+                    </span>
+                    <Sparkles size={13} className="ml-auto shrink-0 text-white/90" />
+                  </button>
+                  <p className="text-[11px] leading-relaxed text-ink-dim">
+                    Choose scientist for cosmograph
+                  </p>
                 </div>
               </CollapsibleSection>
 
@@ -246,7 +241,7 @@ export function Sidebar() {
                 <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-accent ring-2 ring-black" />
               )}
             </RailButton>
-            <RailTip label="Personalize · Upgrade">
+            <RailTip label="Personalize">
               <button
                 type="button"
                 onClick={() => setCustomizeOpen(true)}
