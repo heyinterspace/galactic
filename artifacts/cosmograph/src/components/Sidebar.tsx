@@ -87,6 +87,8 @@ export function Sidebar() {
 
             {/* Scroll body */}
             <div className="flex flex-col gap-4 overflow-y-auto custom-scrollbar p-3">
+              {/* Account — avatar + access status, shown above Platform when signed in */}
+              <AccountIndicator />
               {/* Platform — info, account, meta & primary actions */}
               <CollapsibleSection
                 icon={<LayoutGrid size={15} />}
@@ -101,7 +103,6 @@ export function Sidebar() {
                     icon={<Info size={14} />}
                     label="Info"
                   />
-                  <AccountIndicator />
                   <ConsoleButton
                     onClick={() => setChangelogOpen(true)}
                     icon={<Rocket size={14} />}
