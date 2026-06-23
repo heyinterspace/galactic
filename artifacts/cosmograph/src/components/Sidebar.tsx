@@ -17,6 +17,7 @@ import {
   LayoutGrid,
   Rocket,
   Telescope,
+  Sparkles,
 } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { isFiltersActive } from "@/data/galaxy";
@@ -145,8 +146,9 @@ export function Sidebar() {
                       <span className="font-display text-[11px] uppercase tracking-wider">
                         Personalize
                       </span>
-                      <span className="ml-auto shrink-0 font-mono text-[10px] tracking-wider text-white/90">
-                        $7/yr
+                      <span className="ml-auto flex shrink-0 items-center gap-1 font-display text-[10px] uppercase tracking-wider text-white/90">
+                        <Sparkles size={11} className="shrink-0" />
+                        Upgrade
                       </span>
                     </button>
                     <p className="text-[11px] leading-relaxed text-ink-dim">
@@ -244,15 +246,15 @@ export function Sidebar() {
                 <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-accent ring-2 ring-black" />
               )}
             </RailButton>
-            <RailTip label="Personalize · $7/yr">
+            <RailTip label="Personalize · Upgrade">
               <button
                 type="button"
                 onClick={() => setCustomizeOpen(true)}
                 className="relative flex h-9 w-9 items-center justify-center border-2 border-accent bg-accent/20 text-white transition-all hover:bg-accent/30"
               >
                 <Telescope size={15} />
-                <span className="absolute -top-1.5 -right-1.5 grid h-4 w-4 place-items-center rounded-full bg-accent font-mono text-[8px] font-bold leading-none text-black ring-2 ring-black">
-                  $
+                <span className="absolute -top-1.5 -right-1.5 grid h-4 w-4 place-items-center rounded-full bg-accent leading-none text-black ring-2 ring-black">
+                  <Sparkles size={9} />
                 </span>
               </button>
             </RailTip>
