@@ -21,6 +21,9 @@ import {
   Bug,
   Lightbulb,
   ExternalLink,
+  LayoutGrid,
+  Rocket,
+  Telescope,
 } from "lucide-react";
 import { useTranslateAsk, useReportFeedback } from "@workspace/api-client-react";
 import { useAppState } from "@/lib/store";
@@ -52,6 +55,8 @@ export function Sidebar() {
     setSelectedObject,
     filters,
     setInfoOpen,
+    setChangelogOpen,
+    setCustomizeOpen,
     replayIntro,
     startTour,
     canExplore,
@@ -143,6 +148,27 @@ export function Sidebar() {
                 <div className="flex flex-col gap-1.5">
                   <GitHubLink full />
                   <ShareButton full />
+                </div>
+              </CollapsibleSection>
+
+              {/* Platform */}
+              <CollapsibleSection
+                icon={<LayoutGrid size={15} />}
+                title="Platform"
+                isOpen={openSections.platform}
+                onToggle={() => toggleSection("platform")}
+              >
+                <div className="flex flex-col gap-1.5">
+                  <ConsoleButton
+                    onClick={() => setCustomizeOpen(true)}
+                    icon={<Telescope size={14} />}
+                    label="Customize"
+                  />
+                  <ConsoleButton
+                    onClick={() => setChangelogOpen(true)}
+                    icon={<Rocket size={14} />}
+                    label="Changelog"
+                  />
                   <a
                     href={SITE.github.sponsors}
                     target="_blank"
@@ -243,6 +269,14 @@ export function Sidebar() {
             <RailTip label="Share">
               <ShareButton />
             </RailTip>
+            <Divider />
+            {/* Platform */}
+            <RailButton onClick={() => setCustomizeOpen(true)} label="Customize">
+              <Telescope size={15} />
+            </RailButton>
+            <RailButton onClick={() => setChangelogOpen(true)} label="Changelog">
+              <Rocket size={15} />
+            </RailButton>
             <RailTip label="Donate">
               <a
                 href={SITE.github.sponsors}
@@ -293,13 +327,14 @@ export function Sidebar() {
   );
 }
 
-type SectionKey = "share" | "navigate" | "ask";
+type SectionKey = "share" | "navigate" | "ask" | "platform";
 
 const SECTION_STORAGE_KEY = "galaxy.console.sections";
 const DEFAULT_SECTIONS: Record<SectionKey, boolean> = {
   share: true,
   navigate: true,
   ask: true,
+  platform: true,
 };
 
 function useSectionState() {

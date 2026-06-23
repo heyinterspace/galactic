@@ -5,7 +5,6 @@ import { useAppState } from "@/lib/store";
 import { galaxyData } from "@/data/galaxy";
 import { SITE } from "@/config/site";
 import { LEGEND, NAV_MODES } from "@/lib/legend";
-import { ResearcherSearch } from "@/components/ResearcherSearch";
 
 export function InfoDrawer() {
   const { infoOpen, setInfoOpen, setChangelogOpen, consoleOpen } = useAppState();
@@ -196,10 +195,6 @@ export function InfoDrawer() {
               <p className="mt-3 font-mono text-[10px] leading-relaxed text-ink-dim/70">
                 On touch: drag with one finger to pan, pinch to zoom & rotate.
               </p>
-            </div>
-
-            <div className="mt-8 border-t-2 border-edge pt-6">
-              <ResearcherSearch />
             </div>
 
             <p className="mt-8 border-t-2 border-edge pt-4 font-mono text-[11px] leading-relaxed text-ink-dim">

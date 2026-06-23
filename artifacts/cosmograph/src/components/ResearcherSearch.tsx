@@ -10,7 +10,8 @@ function formatCount(n: number): string {
 }
 
 export function ResearcherSearch() {
-  const { loadAuthor, activeAuthorLabel, setInfoOpen } = useAppState();
+  const { loadAuthor, activeAuthorLabel, setInfoOpen, setCustomizeOpen } =
+    useAppState();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<AuthorCandidate[]>([]);
   const [searching, setSearching] = useState(false);
@@ -50,6 +51,7 @@ export function ResearcherSearch() {
 
   const pick = (c: AuthorCandidate) => {
     setInfoOpen(false);
+    setCustomizeOpen(false);
     setQuery("");
     setResults([]);
     void loadAuthor(c);

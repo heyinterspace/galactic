@@ -56,6 +56,8 @@ interface AppState {
   setInfoOpen: (val: boolean) => void;
   changelogOpen: boolean;
   setChangelogOpen: (val: boolean) => void;
+  customizeOpen: boolean;
+  setCustomizeOpen: (val: boolean) => void;
   // Right-hand "Flight Console" expanded vs collapsed-to-rail. Lifted to the store
   // so the galaxy can slide aside (GPU transform) in sync with the console width.
   consoleOpen: boolean;
@@ -121,6 +123,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setConsoleOpen(false);
     setInfoOpen(false);
     setChangelogOpen(false);
+    setCustomizeOpen(false);
   }, []);
 
   const forgetIntro = useCallback(() => {
@@ -131,6 +134,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setConsoleOpen(false);
     setInfoOpen(false);
     setChangelogOpen(false);
+    setCustomizeOpen(false);
   }, []);
   const [cameraMode, setCameraModeState] = useState<CameraMode>('god');
   const [selectedObject, setSelectedObject] = useState<SelectedObject>(null);
@@ -150,6 +154,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [tourStopIndex, setTourStopIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
   const [changelogOpen, setChangelogOpen] = useState(false);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
 
   // Entitlement: the one-time global account unlock. Mirrored into a ref so the
   // gated handlers below read the current value without a stale closure.
@@ -298,6 +303,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         setInfoOpen,
         changelogOpen,
         setChangelogOpen,
+        customizeOpen,
+        setCustomizeOpen,
         consoleOpen,
         setConsoleOpen,
         datasetVersion,
