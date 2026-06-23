@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Loader2, Copy, Check, Heart, ArrowLeft } from "lucide-react";
@@ -29,40 +29,62 @@ export function ScreenshotGate() {
   const blobRef = useRef<Blob | null>(null);
   const urlRef = useRef<string | null>(null);
   const copyResetTimer = useRef<number | null>(null);
+  const captureTimer = useRef<number | null>(null);
+  const mountedRef = useRef(true);
+  const capturedRef = useRef(false);
+
+  // Snapshot the live scene into the share card exactly once, then tear the GPU
+  // scene down. Guarded so the readiness signal and the safety-net timeout can
+  // both call it without double-capturing.
+  const runCapture = useCallback(async () => {
+    if (capturedRef.current) return;
+    capturedRef.current = true;
+    let blob: Blob | null = null;
+    try {
+      blob = await buildShareCard();
+    } catch {
+      blob = null;
+    }
+    if (!mountedRef.current) return;
+    blobRef.current = blob;
+    if (blob) {
+      const url = URL.createObjectURL(blob);
+      urlRef.current = url;
+      setImageUrl(url);
+    }
+    setCapturing(false);
+  }, []);
+
+  // Fire only once the scene's <Suspense> has resolved (textures loaded). Wait
+  // two animation frames so the first textured frame is actually painted into
+  // the preserved drawing buffer, then a brief settle for bloom/exposure, before
+  // snapshotting — this is what makes the captured card reliable rather than
+  // intermittently blank.
+  const handleSceneReady = useCallback(() => {
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        if (!mountedRef.current) return;
+        captureTimer.current = window.setTimeout(runCapture, 120);
+      }),
+    );
+  }, [runCapture]);
 
   useEffect(() => {
-    let cancelled = false;
-    // Give the freshly-mounted scene time to load its background texture and
-    // settle the camera into the overview before grabbing the frame.
-    const timer = window.setTimeout(async () => {
-      let blob: Blob | null = null;
-      try {
-        blob = await buildShareCard();
-      } catch {
-        blob = null;
-      }
-      if (cancelled) return;
-      blobRef.current = blob;
-      if (blob) {
-        const url = URL.createObjectURL(blob);
-        urlRef.current = url;
-        setImageUrl(url);
-      }
-      // Tear down the live scene once the capture attempt completes — whether or
-      // not it produced an image — so the hidden GPU scene never stays mounted.
-      setCapturing(false);
-    }, 1700);
-
+    mountedRef.current = true;
+    // Safety net: if readiness never fires (e.g. a texture fails to load), still
+    // produce the branded card so the gate never hangs on the spinner.
+    const fallback = window.setTimeout(runCapture, 4000);
     return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
+      mountedRef.current = false;
+      window.clearTimeout(fallback);
+      if (captureTimer.current) window.clearTimeout(captureTimer.current);
       if (urlRef.current) {
         URL.revokeObjectURL(urlRef.current);
         urlRef.current = null;
       }
       if (copyResetTimer.current) window.clearTimeout(copyResetTimer.current);
     };
-  }, []);
+  }, [runCapture]);
 
   const goHome = () => {
     // The baked default researcher is the initial bundle state — a reload returns
@@ -89,7 +111,7 @@ export function ScreenshotGate() {
           though the canvas is never shown to the visitor. */}
       {capturing && (
         <div className="pointer-events-none absolute inset-0 opacity-0" aria-hidden>
-          <Scene captureTopDown />
+          <Scene captureTopDown onReady={handleSceneReady} />
         </div>
       )}
 
@@ -116,7 +138,7 @@ export function ScreenshotGate() {
           className="glass-panel my-auto w-full max-w-md p-6 sm:p-7"
         >
           {/* The captured cosmograph preview, shown inside the panel. */}
-          <div className="mb-5 overflow-hidden border-2 border-edge bg-black/40">
+          <div className="mb-4 overflow-hidden border-2 border-edge bg-black/40">
             {imageUrl ? (
               <motion.img
                 key="card"
@@ -128,7 +150,7 @@ export function ScreenshotGate() {
                 className="block w-full"
               />
             ) : (
-              <div className="flex aspect-[16/10] w-full items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest text-ink-dim">
+              <div className="flex aspect-[1200/630] w-full items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest text-ink-dim">
                 <Loader2 size={14} className="animate-spin" />
                 Rendering preview…
               </div>
@@ -137,7 +159,7 @@ export function ScreenshotGate() {
 
           <MembershipPitch />
 
-          <ul className="mt-4 space-y-2">
+          <ul className="mt-3 space-y-1.5">
             {PERKS.map((perk) => {
               const Icon = perk.icon;
               return (

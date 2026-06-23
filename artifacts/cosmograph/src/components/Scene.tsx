@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { Preload, Stars, useTexture } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
@@ -20,7 +20,24 @@ function Background() {
   );
 }
 
-export function Scene({ captureTopDown = false }: { captureTopDown?: boolean }) {
+// Mounts only after the surrounding <Suspense> resolves (i.e. once the
+// background texture and any other suspending scene assets have loaded), so its
+// effect is a reliable "the scene content is now present" signal. Used by the
+// share-card capture so it never snapshots a still-blank frame.
+function SceneReady({ onReady }: { onReady?: () => void }) {
+  useEffect(() => {
+    onReady?.();
+  }, [onReady]);
+  return null;
+}
+
+export function Scene({
+  captureTopDown = false,
+  onReady,
+}: {
+  captureTopDown?: boolean;
+  onReady?: () => void;
+}) {
   const { setSelectedObject, introFinished } = useAppState();
 
   return (
@@ -55,6 +72,7 @@ export function Scene({ captureTopDown = false }: { captureTopDown?: boolean }) 
 
           <GalaxySystem />
           <CameraController captureTopDown={captureTopDown} />
+          <SceneReady onReady={onReady} />
 
           {introFinished && (
             <>

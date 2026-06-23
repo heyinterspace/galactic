@@ -17,6 +17,17 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.10.1",
+    codename: "Steady Frame",
+    date: "2026-06-23",
+    summary: "The shareable screenshot now renders reliably and sits more compactly.",
+    changes: [
+      "Fixed the shareable screenshot sometimes loading blank — the card now waits for the galaxy to actually render before capturing.",
+      "Trimmed the membership panel's height so it fits the screen more comfortably.",
+      "Each membership perk now has its own icon matching the feature, with an AI star for Ask Cosmos.",
+    ],
+  },
+  {
     version: "3.10.0",
     codename: "Bird's Eye",
     date: "2026-06-23",
