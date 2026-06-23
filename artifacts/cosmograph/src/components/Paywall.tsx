@@ -7,8 +7,8 @@ import { MembershipPitch } from "@/components/MembershipPitch";
 const SPONSOR_URL = "https://github.com/sponsors/heyinterspace";
 
 export const PERKS = [
-  "Explore 3 researchers' full galaxies on your membership — add any more for $1/year each",
-  "Rich detailed galaxy view with every sun and planet reflecting the researcher's body of work",
+  "Explore 3 researchers' full galaxies on your membership",
+  "Rich, detailed, fully explorable galaxy view with every sun and planet reflecting the researcher's body of work",
   "A dedicated, shareable URL for each researcher's galaxy with its own guided tour",
   "Ask Cosmos: ask questions about a researcher's work and watch matching papers light up",
   "Interactive first-person fly-through of any unlocked galaxy",
