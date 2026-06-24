@@ -11,7 +11,10 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAppState } from "@/lib/store";
-import { MembershipActions } from "@/components/MembershipActions";
+import {
+  MembershipActions,
+  WhyAccountNote,
+} from "@/components/MembershipActions";
 import { MembershipPitch } from "@/components/MembershipPitch";
 
 const SPONSOR_URL = "https://github.com/sponsors/heyinterspace";
@@ -94,6 +97,8 @@ export function Paywall() {
             <div className="mt-5 flex flex-col gap-2">
               <MembershipActions onDone={() => setPaywallOpen(false)} />
             </div>
+
+            <WhyAccountNote />
 
             {/* Sponsor the project on GitHub. */}
             <div className="mt-4 border-t-2 border-edge pt-4">

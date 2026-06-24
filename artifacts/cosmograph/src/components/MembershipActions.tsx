@@ -1,7 +1,7 @@
 import { Show } from "@clerk/react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { Lock, Loader2, Rocket } from "lucide-react";
+import { Lock, Loader2, Rocket, ShieldCheck } from "lucide-react";
 import { useCreateCheckout } from "@workspace/api-client-react";
 import { useAppState } from "@/lib/store";
 import { useUnlockFlow } from "@/lib/useUnlockFlow";
@@ -128,5 +128,24 @@ export function MembershipActions({ onDone }: { onDone?: () => void }) {
         )}
       </Show>
     </>
+  );
+}
+
+// Shown only to signed-out visitors, next to the Subscribe CTA. Spells out why
+// the "Subscribe" button sends them to sign-up first — transparency about the
+// account requirement (membership + unlocks are tied to the account, sync across
+// devices, and billing stays self-serve) rather than a silent redirect.
+export function WhyAccountNote() {
+  return (
+    <Show when="signed-out">
+      <p className="mt-3 flex items-start gap-2 text-[12px] leading-relaxed text-ink-dim">
+        <ShieldCheck size={13} className="mt-0.5 shrink-0 text-accent" />
+        <span>
+          Subscribing creates a free account first. It's how your membership and
+          unlocked researchers stay tied to you — available on any device, with
+          billing you can manage or cancel anytime.
+        </span>
+      </p>
+    </Show>
   );
 }

@@ -5,7 +5,10 @@ import { Copy, Check, Heart, ArrowLeft } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { Scene } from "@/components/Scene";
 import { PERKS } from "@/components/Paywall";
-import { MembershipActions } from "@/components/MembershipActions";
+import {
+  MembershipActions,
+  WhyAccountNote,
+} from "@/components/MembershipActions";
 import { MembershipPitch } from "@/components/MembershipPitch";
 import { buildShareCard, copyImageToClipboard } from "@/lib/share";
 
@@ -199,6 +202,8 @@ export function ScreenshotGate() {
               <MembershipActions />
             </div>
           </div>
+
+          <WhyAccountNote />
 
           {/* Sponsor the project on GitHub. */}
           <div className="mt-4 border-t-2 border-edge pt-4">

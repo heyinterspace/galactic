@@ -17,10 +17,22 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.10.2",
+    codename: "Open Hatch",
+    date: "2026-06-24",
+    summary:
+      "The membership panel now explains why subscribing creates an account.",
+    changes: [
+      "Added a short note next to Subscribe explaining that membership creates a free account so your unlocks stay tied to you across devices and billing stays self-serve.",
+      "Toned down the Sponsor and Personalize buttons in the console: instead of a full purple highlight, they now carry a subtle inline tag marking them as paid.",
+    ],
+  },
+  {
     version: "3.10.1",
     codename: "Steady Frame",
     date: "2026-06-23",
-    summary: "The shareable screenshot now renders reliably and sits more compactly.",
+    summary:
+      "The shareable screenshot now renders reliably and sits more compactly.",
     changes: [
       "Fixed the shareable screenshot sometimes loading blank — the card now waits for the galaxy to actually render before capturing.",
       "Trimmed the membership panel's height so it fits the screen more comfortably.",
@@ -31,7 +43,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "3.10.0",
     codename: "Bird's Eye",
     date: "2026-06-23",
-    summary: "Shareable screenshots now capture the galaxy from a top-down view.",
+    summary:
+      "Shareable screenshots now capture the galaxy from a top-down view.",
     changes: [
       "The shareable screenshot now shows your galaxy from a top-down vantage, framing the whole disk instead of the last camera angle.",
     ],
@@ -40,7 +53,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "3.9.0",
     codename: "Clear Skies",
     date: "2026-06-23",
-    summary: "Console polish, clearer Subscribe + Sponsor actions, and steadier sharing.",
+    summary:
+      "Console polish, clearer Subscribe + Sponsor actions, and steadier sharing.",
     changes: [
       "Tightened the spacing under the Mission Control header so Platform sits up closer to the top.",
       "Personalize now shows an Upgrade badge instead of a Premium one, with the helper line moved below the button.",
@@ -75,7 +89,8 @@ export const CHANGELOG: ChangelogEntry[] = [
     version: "3.6.0",
     codename: "Postcard",
     date: "2026-06-23",
-    summary: "Custom galaxies open as a shareable postcard — membership drops to $7.",
+    summary:
+      "Custom galaxies open as a shareable postcard — membership drops to $7.",
     changes: [
       "Searching a scientist now opens their cosmograph as a full-screen shareable screenshot with one tap to copy, download, or share it.",
       "Membership is now $7/year — subscribe right from the screenshot to unlock the full interactive galaxy for anyone you search.",
@@ -131,7 +146,7 @@ export const CHANGELOG: ChangelogEntry[] = [
       "Full access is now a $10/year membership: fly, tour, and deep-dive any scientist you search, with every new feature included.",
       "Ask Cosmos headlines membership — ask questions about any researcher's work, answered from their galaxy.",
       "Fellow explorers are now 'cosmonauts' — watch the live headcount streaming the stars with you.",
-      "Every voyage now ends with a personal welcome: \"Welcome to the [scientist] cosmos.\"",
+      'Every voyage now ends with a personal welcome: "Welcome to the [scientist] cosmos."',
     ],
   },
   {
