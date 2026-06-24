@@ -58,6 +58,7 @@ type ConsoleItem =
       active?: boolean;
       locked?: boolean;
       accent?: boolean;
+      paidTag?: boolean;
       trailing?: IconType;
       tooltip?: string;
       activeIconClass?: string;
@@ -71,6 +72,7 @@ type ConsoleItem =
       href: string;
       title?: string;
       accent?: boolean;
+      paidTag?: boolean;
       trailing?: IconType;
     }
   | {
@@ -164,7 +166,7 @@ export function Sidebar() {
           Icon: Heart,
           href: SITE.github.sponsors,
           title: "Sponsor development via GitHub Sponsors (opens in a new tab)",
-          accent: true,
+          paidTag: true,
           trailing: Github,
         },
         {
@@ -173,7 +175,7 @@ export function Sidebar() {
           label: "Personalize",
           Icon: Telescope,
           onClick: () => setCustomizeOpen(true),
-          accent: true,
+          paidTag: true,
           trailing: Sparkles,
           tooltip: "Choose researcher for cosmograph",
         },
@@ -385,6 +387,16 @@ function RailBody({ sections }: { sections: ConsoleSection[] }) {
 }
 
 /** One item rendered for the expanded panel. */
+// Subtle inline "this costs money" marker — a small hard-edged purple tag, so a
+// paid action reads as paid without flooding the whole button with accent.
+function PaidTag() {
+  return (
+    <span className="ml-auto shrink-0 border border-accent/60 bg-accent/15 px-1.5 py-px font-mono text-[9px] font-semibold tracking-widest text-accent">
+      $
+    </span>
+  );
+}
+
 function ExpandedItem({ item }: { item: ConsoleItem }) {
   if (item.kind === "custom") return <>{item.expanded}</>;
 
@@ -407,8 +419,12 @@ function ExpandedItem({ item }: { item: ConsoleItem }) {
         <span className="font-display text-[11px] uppercase tracking-wider">
           {item.label}
         </span>
-        {Trailing && (
-          <Trailing size={14} className="ml-auto shrink-0 text-white/70" />
+        {item.paidTag ? (
+          <PaidTag />
+        ) : (
+          Trailing && (
+            <Trailing size={14} className="ml-auto shrink-0 text-white/70" />
+          )
         )}
       </a>
     );
@@ -416,20 +432,28 @@ function ExpandedItem({ item }: { item: ConsoleItem }) {
 
   // action
   const { Icon } = item;
-  if (item.accent) {
+  if (item.accent || item.paidTag) {
     const Trailing = item.trailing;
     const btn = (
       <button
         type="button"
         onClick={item.onClick}
-        className="flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
+        className={
+          item.accent
+            ? "flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
+            : "flex h-9 w-full items-center gap-2 border-2 border-edge bg-white/5 px-3 text-ink transition-all hover:bg-white/10"
+        }
       >
         <Icon size={14} className="shrink-0 text-white" />
         <span className="font-display text-[11px] uppercase tracking-wider">
           {item.label}
         </span>
-        {Trailing && (
-          <Trailing size={13} className="ml-auto shrink-0 text-white/90" />
+        {item.paidTag ? (
+          <PaidTag />
+        ) : (
+          Trailing && (
+            <Trailing size={13} className="ml-auto shrink-0 text-white/90" />
+          )
         )}
       </button>
     );
