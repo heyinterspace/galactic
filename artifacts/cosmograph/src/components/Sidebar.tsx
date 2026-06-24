@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Info,
@@ -33,6 +33,65 @@ import {
   TooltipProvider,
 } from "./ui/tooltip";
 
+/**
+ * Mission Control console model.
+ *
+ * The collapsed rail and the expanded panel are rendered from this single
+ * ordered list of sections/items so they can never drift apart in order,
+ * labels, icons, or gating. The two renderers (`ConsoleBody` for expanded,
+ * `RailBody` for collapsed) decide how each item *looks*:
+ *
+ *  - expanded keeps the active-state fills, accent CTAs, and section chrome;
+ *  - collapsed is a neutral set of working icon shortcuts — no active fills,
+ *    no accent CTAs, no badges — only the lock indicator on gated items.
+ */
+type IconType = React.ComponentType<{ size?: number; className?: string }>;
+
+type ConsoleItem =
+  | {
+      kind: "action";
+      id: string;
+      label: string;
+      railLabel?: string;
+      Icon: IconType;
+      onClick: () => void;
+      active?: boolean;
+      locked?: boolean;
+      accent?: boolean;
+      trailing?: IconType;
+      tooltip?: string;
+      activeIconClass?: string;
+    }
+  | {
+      kind: "link";
+      id: string;
+      label: string;
+      railLabel?: string;
+      Icon: IconType;
+      href: string;
+      title?: string;
+      accent?: boolean;
+      trailing?: IconType;
+    }
+  | {
+      kind: "custom";
+      id: string;
+      label: string;
+      expanded: React.ReactNode;
+      rail: React.ReactNode;
+      railTip?: boolean;
+    };
+
+type ConsoleSection = {
+  id: "account" | SectionKey;
+  title?: string;
+  icon?: React.ReactNode;
+  flush?: boolean;
+  /** chrome = collapsible header (expanded) + divider separation (collapsed) */
+  chrome: boolean;
+  items: ConsoleItem[];
+};
+
 export function Sidebar() {
   const {
     setCameraMode,
@@ -52,6 +111,139 @@ export function Sidebar() {
   const { openSections, toggleSection } = useSectionState();
 
   const filtersActive = isFiltersActive(filters);
+
+  const sections: ConsoleSection[] = [
+    {
+      id: "account",
+      chrome: false,
+      items: [
+        {
+          kind: "custom",
+          id: "account",
+          label: "Account",
+          expanded: <AccountIndicator />,
+          rail: <AccountIndicatorRail />,
+        },
+      ],
+    },
+    {
+      id: "platform",
+      title: "Platform",
+      icon: <LayoutGrid size={15} />,
+      flush: true,
+      chrome: true,
+      items: [
+        {
+          kind: "action",
+          id: "info",
+          label: "Info",
+          Icon: Info,
+          onClick: () => setInfoOpen(true),
+        },
+        {
+          kind: "action",
+          id: "changelog",
+          label: "Changelog",
+          Icon: Rocket,
+          onClick: () => setChangelogOpen(true),
+        },
+        {
+          kind: "action",
+          id: "ask",
+          label: "Ask Cosmos",
+          railLabel: "Ask",
+          Icon: MessageCircleStar,
+          onClick: () => setAskOpen(true),
+          active: filtersActive,
+          activeIconClass: "text-accent",
+        },
+        {
+          kind: "link",
+          id: "sponsor",
+          label: "Sponsor",
+          Icon: Heart,
+          href: SITE.github.sponsors,
+          title: "Sponsor development via GitHub Sponsors (opens in a new tab)",
+          accent: true,
+          trailing: Github,
+        },
+        {
+          kind: "action",
+          id: "personalize",
+          label: "Personalize",
+          Icon: Telescope,
+          onClick: () => setCustomizeOpen(true),
+          accent: true,
+          trailing: Sparkles,
+          tooltip: "Choose researcher for cosmograph",
+        },
+      ],
+    },
+    {
+      id: "share",
+      title: "Share",
+      icon: <Share2 size={15} />,
+      chrome: true,
+      items: [
+        {
+          kind: "custom",
+          id: "github",
+          label: "GitHub",
+          expanded: <GitHubLink full />,
+          rail: <GitHubLink compact />,
+          railTip: true,
+        },
+        {
+          kind: "custom",
+          id: "share",
+          label: "Share",
+          expanded: <ShareButton full />,
+          rail: <ShareButton />,
+          railTip: true,
+        },
+      ],
+    },
+    {
+      id: "navigate",
+      title: "Navigate",
+      icon: <Navigation size={15} />,
+      chrome: true,
+      items: [
+        {
+          kind: "action",
+          id: "orbit",
+          label: "Orbit",
+          Icon: Orbit,
+          onClick: () => setCameraMode("god"),
+          active: cameraMode === "god",
+        },
+        {
+          kind: "action",
+          id: "fly",
+          label: "Fly",
+          Icon: Compass,
+          onClick: () => setCameraMode("spaceship"),
+          active: cameraMode === "spaceship",
+          locked: !canExplore,
+        },
+        {
+          kind: "action",
+          id: "tour",
+          label: "Tour",
+          Icon: Map,
+          onClick: startTour,
+          locked: !canExplore,
+        },
+        {
+          kind: "action",
+          id: "replay",
+          label: "Replay",
+          Icon: Rewind,
+          onClick: replayIntro,
+        },
+      ],
+    },
+  ];
 
   return (
     <TooltipProvider delayDuration={150} skipDelayDuration={400}>
@@ -85,137 +277,11 @@ export function Sidebar() {
                 </button>
               </div>
 
-              {/* Scroll body */}
-              <div className="flex flex-col gap-4 overflow-y-auto custom-scrollbar p-3">
-                {/* Account — avatar + access status, shown above Platform when signed in */}
-                <AccountIndicator />
-                {/* Platform — info, account, meta & primary actions */}
-                <CollapsibleSection
-                  icon={<LayoutGrid size={15} />}
-                  title="Platform"
-                  isOpen={openSections.platform}
-                  onToggle={() => toggleSection("platform")}
-                  flush
-                >
-                  <div className="flex flex-col gap-1.5">
-                    <ConsoleButton
-                      onClick={() => setInfoOpen(true)}
-                      icon={<Info size={14} />}
-                      label="Info"
-                    />
-                    <ConsoleButton
-                      onClick={() => setChangelogOpen(true)}
-                      icon={<Rocket size={14} />}
-                      label="Changelog"
-                    />
-                    <ConsoleButton
-                      active={filtersActive}
-                      onClick={() => setAskOpen(true)}
-                      icon={
-                        <MessageCircleStar
-                          size={14}
-                          className={filtersActive ? "text-accent" : undefined}
-                        />
-                      }
-                      label="Ask Cosmos"
-                    />
-                    <a
-                      href={SITE.github.sponsors}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Sponsor development via GitHub Sponsors (opens in a new tab)"
-                      className="flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
-                    >
-                      <Heart size={14} className="shrink-0 text-white" />
-                      <span className="font-display text-[11px] uppercase tracking-wider">
-                        Sponsor
-                      </span>
-                      <Github
-                        size={14}
-                        className="ml-auto shrink-0 text-white/70"
-                      />
-                    </a>
-
-                    {/* Personalize — paid */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          type="button"
-                          onClick={() => setCustomizeOpen(true)}
-                          className="flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
-                        >
-                          <Telescope
-                            size={14}
-                            className="shrink-0 text-white"
-                          />
-                          <span className="font-display text-[11px] uppercase tracking-wider">
-                            Personalize
-                          </span>
-                          <Sparkles
-                            size={13}
-                            className="ml-auto shrink-0 text-white/90"
-                          />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="left"
-                        sideOffset={8}
-                        className="rounded-none border-2 border-edge bg-black/90 px-2 py-1 font-display text-[10px] uppercase tracking-wider text-ink"
-                      >
-                        Choose researcher for cosmograph
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </CollapsibleSection>
-
-                {/* Share */}
-                <CollapsibleSection
-                  icon={<Share2 size={15} />}
-                  title="Share"
-                  isOpen={openSections.share}
-                  onToggle={() => toggleSection("share")}
-                >
-                  <div className="flex flex-col gap-1.5">
-                    <GitHubLink full />
-                    <ShareButton full />
-                  </div>
-                </CollapsibleSection>
-
-                {/* Navigate */}
-                <CollapsibleSection
-                  icon={<Navigation size={15} />}
-                  title="Navigate"
-                  isOpen={openSections.navigate}
-                  onToggle={() => toggleSection("navigate")}
-                >
-                  <div className="flex flex-col gap-1.5">
-                    <ConsoleButton
-                      active={cameraMode === "god"}
-                      onClick={() => setCameraMode("god")}
-                      icon={<Orbit size={14} />}
-                      label="Orbit"
-                    />
-                    <ConsoleButton
-                      active={cameraMode === "spaceship"}
-                      onClick={() => setCameraMode("spaceship")}
-                      icon={<Compass size={14} />}
-                      label="Fly"
-                      locked={!canExplore}
-                    />
-                    <ConsoleButton
-                      onClick={startTour}
-                      icon={<Map size={14} />}
-                      label="Tour"
-                      locked={!canExplore}
-                    />
-                    <ConsoleButton
-                      onClick={replayIntro}
-                      icon={<Rewind size={14} />}
-                      label="Replay"
-                    />
-                  </div>
-                </CollapsibleSection>
-              </div>
+              <ConsoleBody
+                sections={sections}
+                openSections={openSections}
+                toggleSection={toggleSection}
+              />
             </motion.div>
           ) : (
             <motion.div
@@ -245,82 +311,200 @@ export function Sidebar() {
                 </Tooltip>
               </div>
 
-              {/* Rail body — icon-only mirror of the expanded scroll body */}
-              <div className="flex flex-col items-center gap-1 overflow-y-auto custom-scrollbar p-1.5">
-                {/* Account — avatar + access status, mirrors the expanded
-                    Account block placed above Platform when signed in. */}
-                <AccountIndicatorRail />
-                {/* Platform — same order as the expanded Platform section.
-                    No active fills, dots, or accent CTAs: the collapsed rail is
-                    a neutral set of working shortcuts, not a state display. */}
-                <RailButton onClick={() => setInfoOpen(true)} label="Info">
-                  <Info size={16} />
-                </RailButton>
-                <RailButton
-                  onClick={() => setChangelogOpen(true)}
-                  label="Changelog"
-                >
-                  <Rocket size={15} />
-                </RailButton>
-                <RailButton onClick={() => setAskOpen(true)} label="Ask">
-                  <MessageCircleStar size={15} />
-                </RailButton>
-                <RailTip label="Sponsor">
-                  <a
-                    href={SITE.github.sponsors}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Sponsor via GitHub Sponsors (opens in a new tab)"
-                    className="relative flex h-9 w-9 items-center justify-center border-2 border-edge bg-white/5 text-ink transition-all hover:bg-white/10"
-                  >
-                    <Heart size={15} />
-                  </a>
-                </RailTip>
-                <RailTip label="Personalize">
-                  <button
-                    type="button"
-                    onClick={() => setCustomizeOpen(true)}
-                    className="relative flex h-9 w-9 items-center justify-center border-2 border-edge bg-white/5 text-ink transition-all hover:bg-white/10"
-                  >
-                    <Telescope size={15} />
-                  </button>
-                </RailTip>
-                <Divider />
-                {/* Share */}
-                <RailTip label="GitHub">
-                  <GitHubLink compact />
-                </RailTip>
-                <RailTip label="Share">
-                  <ShareButton />
-                </RailTip>
-                <Divider />
-                {/* Navigate */}
-                <RailButton onClick={() => setCameraMode("god")} label="Orbit">
-                  <Orbit size={15} />
-                </RailButton>
-                <RailButton
-                  onClick={() => setCameraMode("spaceship")}
-                  label="Fly"
-                  locked={!canExplore}
-                >
-                  <Compass size={15} />
-                </RailButton>
-                <RailButton
-                  onClick={startTour}
-                  label="Tour"
-                  locked={!canExplore}
-                >
-                  <Map size={16} />
-                </RailButton>
-                <RailButton onClick={replayIntro} label="Replay">
-                  <Rewind size={16} />
-                </RailButton>
-              </div>
+              <RailBody sections={sections} />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
     </TooltipProvider>
+  );
+}
+
+/** Expanded panel body: section chrome + full-width labelled controls. */
+function ConsoleBody({
+  sections,
+  openSections,
+  toggleSection,
+}: {
+  sections: ConsoleSection[];
+  openSections: Record<SectionKey, boolean>;
+  toggleSection: (key: SectionKey) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-4 overflow-y-auto custom-scrollbar p-3">
+      {sections.map((section) =>
+        section.chrome ? (
+          <CollapsibleSection
+            key={section.id}
+            icon={section.icon}
+            title={section.title ?? ""}
+            isOpen={openSections[section.id as SectionKey]}
+            onToggle={() => toggleSection(section.id as SectionKey)}
+            flush={section.flush}
+          >
+            <div className="flex flex-col gap-1.5">
+              {section.items.map((item) => (
+                <ExpandedItem key={item.id} item={item} />
+              ))}
+            </div>
+          </CollapsibleSection>
+        ) : (
+          <Fragment key={section.id}>
+            {section.items.map((item) => (
+              <ExpandedItem key={item.id} item={item} />
+            ))}
+          </Fragment>
+        ),
+      )}
+    </div>
+  );
+}
+
+/** Collapsed rail body: neutral icon shortcuts, dividers between groups. */
+function RailBody({ sections }: { sections: ConsoleSection[] }) {
+  let firstChromeSeen = false;
+  return (
+    <div className="flex flex-col items-center gap-1 overflow-y-auto custom-scrollbar p-1.5">
+      {sections.map((section) => {
+        let divider = false;
+        if (section.chrome) {
+          divider = firstChromeSeen;
+          firstChromeSeen = true;
+        }
+        return (
+          <Fragment key={section.id}>
+            {divider && <Divider />}
+            {section.items.map((item) => (
+              <RailItem key={item.id} item={item} />
+            ))}
+          </Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+/** One item rendered for the expanded panel. */
+function ExpandedItem({ item }: { item: ConsoleItem }) {
+  if (item.kind === "custom") return <>{item.expanded}</>;
+
+  if (item.kind === "link") {
+    const { Icon } = item;
+    const Trailing = item.trailing;
+    return (
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={item.title ?? `${item.label} (opens in a new tab)`}
+        className={
+          item.accent
+            ? "flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
+            : "flex h-9 w-full items-center gap-2 border-2 border-edge bg-white/5 px-3 text-ink transition-all hover:bg-white/10"
+        }
+      >
+        <Icon size={14} className="shrink-0 text-white" />
+        <span className="font-display text-[11px] uppercase tracking-wider">
+          {item.label}
+        </span>
+        {Trailing && (
+          <Trailing size={14} className="ml-auto shrink-0 text-white/70" />
+        )}
+      </a>
+    );
+  }
+
+  // action
+  const { Icon } = item;
+  if (item.accent) {
+    const Trailing = item.trailing;
+    const btn = (
+      <button
+        type="button"
+        onClick={item.onClick}
+        className="flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
+      >
+        <Icon size={14} className="shrink-0 text-white" />
+        <span className="font-display text-[11px] uppercase tracking-wider">
+          {item.label}
+        </span>
+        {Trailing && (
+          <Trailing size={13} className="ml-auto shrink-0 text-white/90" />
+        )}
+      </button>
+    );
+    return item.tooltip ? (
+      <Tooltip>
+        <TooltipTrigger asChild>{btn}</TooltipTrigger>
+        <TooltipContent
+          side="left"
+          sideOffset={8}
+          className="rounded-none border-2 border-edge bg-black/90 px-2 py-1 font-display text-[10px] uppercase tracking-wider text-ink"
+        >
+          {item.tooltip}
+        </TooltipContent>
+      </Tooltip>
+    ) : (
+      btn
+    );
+  }
+
+  return (
+    <ConsoleButton
+      active={item.active}
+      onClick={item.onClick}
+      locked={item.locked}
+      icon={
+        <Icon
+          size={14}
+          className={item.active ? item.activeIconClass : undefined}
+        />
+      }
+      label={item.label}
+    />
+  );
+}
+
+/**
+ * One item rendered for the collapsed rail. Neutral by design: no active
+ * fills, accent CTAs, or badges — only the gated-item lock from RailButton.
+ */
+function RailItem({ item }: { item: ConsoleItem }) {
+  if (item.kind === "custom") {
+    return item.railTip ? (
+      <RailTip label={item.label}>{item.rail}</RailTip>
+    ) : (
+      <>{item.rail}</>
+    );
+  }
+
+  if (item.kind === "link") {
+    const { Icon } = item;
+    return (
+      <RailTip label={item.railLabel ?? item.label}>
+        <a
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`${item.label} (opens in a new tab)`}
+          className="relative flex h-9 w-9 items-center justify-center border-2 border-edge bg-white/5 text-ink transition-all hover:bg-white/10"
+        >
+          <Icon size={15} />
+        </a>
+      </RailTip>
+    );
+  }
+
+  // action — neutral, no active/accent in the collapsed rail
+  const { Icon } = item;
+  return (
+    <RailButton
+      onClick={item.onClick}
+      label={item.railLabel ?? item.label}
+      locked={item.locked}
+    >
+      <Icon size={15} />
+    </RailButton>
   );
 }
 
