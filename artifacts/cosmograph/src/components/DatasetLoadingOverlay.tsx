@@ -142,8 +142,6 @@ export function DatasetLoadingOverlay() {
       ? `Charting ${fetched.toLocaleString()} of ${total.toLocaleString()} papers`
       : BUILDING_MESSAGES[msgIndex];
 
-  const pctLabel = Math.round(progress * 100);
-
   return (
     <AnimatePresence>
       {visible && (
@@ -201,20 +199,6 @@ export function DatasetLoadingOverlay() {
                       {statusLine}
                     </motion.p>
                   </AnimatePresence>
-                </div>
-
-                <div className="mt-4">
-                  <div className="h-1.5 w-full overflow-hidden border border-edge bg-white/5">
-                    <motion.div
-                      className="h-full bg-accent"
-                      initial={false}
-                      animate={{ width: `${pctLabel}%` }}
-                      transition={{ ease: "easeOut", duration: 0.4 }}
-                    />
-                  </div>
-                  <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-ink-dim">
-                    {pctLabel}% · building the galaxy
-                  </p>
                 </div>
               </>
             )}

@@ -25,6 +25,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     changes: [
       "Added a short note next to Subscribe explaining that membership creates a free account so your unlocks stay tied to you across devices and billing stays self-serve.",
       "Toned down the Sponsor and Personalize buttons in the console: instead of a full purple highlight, they now carry a subtle inline tag marking them as paid.",
+      "Simplified the galaxy loading screen — the cosmograph mark now fills up on its own, without a separate progress bar or percentage.",
     ],
   },
   {
