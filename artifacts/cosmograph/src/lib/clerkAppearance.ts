@@ -11,7 +11,11 @@ export const clerkAppearance = {
   options: {
     logoPlacement: "inside" as const,
     logoLinkUrl: basePath || "/",
-    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
+    // Use the square brand mark (not the wide lockup): an SVG loaded as an <img>
+    // can't pull in the Archivo web font, so the lockup's wordmark dropped to a
+    // muddy gray fallback and the mark got squished. Clerk renders the
+    // "Cosmograph" name itself, so the crisp icon completes the lockup.
+    logoImageUrl: `${window.location.origin}${basePath}/logo-mark.svg`,
     socialButtonsPlacement: "bottom" as const,
     socialButtonsVariant: "blockButton" as const,
   },
@@ -53,10 +57,9 @@ export const clerkAppearance = {
     formFieldSuccessText: "text-[#a388ee]",
     alert: "border-2 border-[#3c3f4b] bg-white/5",
     alertText: "text-[#e6e6e6]",
-    otpCodeFieldInput:
-      "bg-[#272933] border-2 border-[#3c3f4b] text-[#e6e6e6]",
-    logoBox: "h-10",
-    logoImage: "h-10",
+    otpCodeFieldInput: "bg-[#272933] border-2 border-[#3c3f4b] text-[#e6e6e6]",
+    logoBox: "h-9 w-9 shrink-0",
+    logoImage: "h-9 w-9 object-contain",
     main: "gap-4",
   },
 };

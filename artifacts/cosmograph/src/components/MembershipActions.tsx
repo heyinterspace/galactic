@@ -12,7 +12,8 @@ const BTN =
 
 // The membership call-to-action, shared by the Paywall modal and ScreenshotGate.
 // It renders one of three states:
-//   • signed-out          → "Subscribe" (routes to sign-in)
+//   • signed-out          → "Subscribe" (routes to sign-up — new visitors need an
+//                            account first; the sign-up page links to sign-in)
 //   • signed-in non-member → "Subscribe · $7/year" (Stripe checkout)
 //   • signed-in member     → "Unlock <name>" — free within the included slots, or
 //                            "+$1/year" for each researcher beyond them.
@@ -32,9 +33,9 @@ export function MembershipActions({ onDone }: { onDone?: () => void }) {
   const isPaidSlot = unlockedAuthors.length >= includedSlots;
   const busy = checkout.isPending || unlocking;
 
-  const goSignIn = () => {
+  const goSignUp = () => {
     onDone?.();
-    setLocation("/sign-in");
+    setLocation("/sign-up");
   };
 
   const startUnlock = () => {
@@ -51,9 +52,14 @@ export function MembershipActions({ onDone }: { onDone?: () => void }) {
           if (res.alreadyEntitled) {
             // Already a member — this researcher just needs unlocking, not a new
             // subscription. Fall through to the unlock flow.
-            if (activeAuthorId) unlock(activeAuthorId, activeAuthorLabel, onDone);
+            if (activeAuthorId)
+              unlock(activeAuthorId, activeAuthorLabel, onDone);
             else {
-              setEntitlement({ entitled: true, unlocked: unlockedAuthors, includedSlots });
+              setEntitlement({
+                entitled: true,
+                unlocked: unlockedAuthors,
+                includedSlots,
+              });
               onDone?.();
             }
             return;
@@ -74,7 +80,7 @@ export function MembershipActions({ onDone }: { onDone?: () => void }) {
   return (
     <>
       <Show when="signed-out">
-        <button onClick={goSignIn} style={ACCENT} className={BTN}>
+        <button onClick={goSignUp} style={ACCENT} className={BTN}>
           <Rocket size={14} />
           <span>Subscribe</span>
         </button>
@@ -114,7 +120,9 @@ export function MembershipActions({ onDone }: { onDone?: () => void }) {
               <Lock size={14} />
             )}
             <span>
-              {checkout.isPending ? "Starting checkout…" : "Subscribe · $7/year"}
+              {checkout.isPending
+                ? "Starting checkout…"
+                : "Subscribe · $7/year"}
             </span>
           </button>
         )}
