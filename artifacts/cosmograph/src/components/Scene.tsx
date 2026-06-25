@@ -62,7 +62,7 @@ export function Scene({
         // console push (the canvas is confined to the space left of the console,
         // so opening/closing it changes the canvas width) triggers a per-frame
         // renderer + camera-aspect + bloom-target recompute. The debounce coalesces
-        // the whole 450ms push transition into a single snap once the layout settles.
+        // the whole 280ms push transition into a single snap once the layout settles.
         resize={{ debounce: 150 }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.ACESFilmicToneMapping;

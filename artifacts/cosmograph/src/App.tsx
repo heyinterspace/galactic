@@ -84,10 +84,18 @@ function GalaxyView() {
               The selection nudge is a pure transform (no resize) so picking planets
               stays smooth. */}
           <div
-            className="absolute inset-y-0 left-0 transition-[right,transform] duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)] will-change-transform"
+            className="absolute inset-y-0 left-0 will-change-[right,transform]"
             style={{
               right: rightInset,
               transform: `translateX(${selectionShift})`,
+              // `right` (the console push) is kept in lockstep with the console
+              // panel's own width animation (Sidebar.tsx: 280ms, same easing) so
+              // the galaxy edge and the panel edge move as one — otherwise the
+              // panel collapses faster than the canvas refills and you see the
+              // dark gap "pull over" late. `transform` (the selection nudge) is a
+              // separate interaction, so it keeps its own slower, softer curve.
+              transition:
+                "right 280ms cubic-bezier(0.22,1,0.36,1), transform 450ms cubic-bezier(0.16,1,0.3,1)",
             }}
           >
             <Scene />
