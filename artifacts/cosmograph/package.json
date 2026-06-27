@@ -82,5 +82,9 @@
     "vite": "catalog:",
     "wouter": "^3.3.5",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "lucide-animated": "^1.0.4",
+    "motion": "^12.42.0"
   }
 }

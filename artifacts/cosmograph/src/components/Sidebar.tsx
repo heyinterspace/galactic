@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, useRef, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Info,
@@ -21,6 +21,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { CompassIcon, RocketIcon, TelescopeIcon } from "lucide-animated";
 import { useAppState } from "@/lib/store";
 import { isFiltersActive } from "@/data/galaxy";
 import { SITE } from "@/config/site";
@@ -49,6 +50,19 @@ import {
  */
 type IconType = React.ComponentType<{ size?: number; className?: string }>;
 
+/**
+ * Animated sidebar icons (lucide-animated). Each exposes an imperative handle so
+ * the parent button can replay the animation on click. Structurally every
+ * lucide-animated icon shares this handle + prop shape.
+ */
+type AnimatedIconHandle = {
+  startAnimation: () => void;
+  stopAnimation: () => void;
+};
+type AnimatedIconType = React.ForwardRefExoticComponent<
+  { size?: number; className?: string; animateOnHover?: boolean } & React.RefAttributes<AnimatedIconHandle>
+>;
+
 type ConsoleItem =
   | {
       kind: "action";
@@ -64,6 +78,8 @@ type ConsoleItem =
       trailing?: IconType;
       tooltip?: string;
       activeIconClass?: string;
+      /** Optional animated icon (lucide-animated) replayed on click. */
+      animated?: AnimatedIconType;
     }
   | {
       kind: "link";
@@ -149,6 +165,7 @@ export function Sidebar() {
           id: "changelog",
           label: "Changelog",
           Icon: Rocket,
+          animated: RocketIcon,
           onClick: () => setChangelogOpen(true),
         },
         {
@@ -176,6 +193,7 @@ export function Sidebar() {
           id: "personalize",
           label: "Personalize",
           Icon: Telescope,
+          animated: TelescopeIcon,
           onClick: () => setCustomizeOpen(true),
           paidTag: true,
           trailing: Sparkles,
@@ -226,6 +244,7 @@ export function Sidebar() {
           id: "fly",
           label: "Fly",
           Icon: Compass,
+          animated: CompassIcon,
           onClick: () => setCameraMode("spaceship"),
           active: cameraMode === "spaceship",
           locked: !canExplore,
@@ -400,6 +419,10 @@ function PaidTag() {
 }
 
 function ExpandedItem({ item }: { item: ConsoleItem }) {
+  // Ref to an optional animated icon so a click replays its animation. Declared
+  // unconditionally (before any early return) to keep hook order stable.
+  const animRef = useRef<AnimatedIconHandle>(null);
+
   if (item.kind === "custom") return <>{item.expanded}</>;
 
   if (item.kind === "link") {
@@ -440,19 +463,37 @@ function ExpandedItem({ item }: { item: ConsoleItem }) {
 
   // action
   const { Icon } = item;
+  // Replay the animated icon (if any) on click, then run the action. Hover
+  // auto-animation is disabled so motion only fires on an intentional click.
+  const handleClick = () => {
+    animRef.current?.startAnimation();
+    item.onClick();
+  };
+  const renderIcon = (size: number, className?: string) =>
+    item.animated ? (
+      <item.animated
+        ref={animRef}
+        size={size}
+        className={className}
+        animateOnHover={false}
+      />
+    ) : (
+      <Icon size={size} className={className} />
+    );
+
   if (item.accent || item.paidTag) {
     const Trailing = item.trailing;
     const btn = (
       <button
         type="button"
-        onClick={item.onClick}
+        onClick={handleClick}
         className={
           item.accent
             ? "flex h-9 w-full items-center gap-2 border-2 border-accent bg-accent/20 px-3 text-white transition-all hover:bg-accent/30"
             : "flex h-9 w-full items-center gap-2 border-2 border-edge bg-white/5 px-3 text-ink transition-all hover:bg-white/10"
         }
       >
-        <Icon size={14} className="shrink-0 text-white" />
+        {renderIcon(14, "shrink-0 text-white")}
         <span className="font-display text-[11px] uppercase tracking-wider">
           {item.label}
         </span>
@@ -484,14 +525,9 @@ function ExpandedItem({ item }: { item: ConsoleItem }) {
   return (
     <ConsoleButton
       active={item.active}
-      onClick={item.onClick}
+      onClick={handleClick}
       locked={item.locked}
-      icon={
-        <Icon
-          size={14}
-          className={item.active ? item.activeIconClass : undefined}
-        />
-      }
+      icon={renderIcon(14, item.active ? item.activeIconClass : undefined)}
       label={item.label}
     />
   );
@@ -502,6 +538,10 @@ function ExpandedItem({ item }: { item: ConsoleItem }) {
  * fills, accent CTAs, or badges — only the gated-item lock from RailButton.
  */
 function RailItem({ item }: { item: ConsoleItem }) {
+  // Ref to an optional animated icon (declared before any early return to keep
+  // hook order stable); a rail click replays the animation.
+  const animRef = useRef<AnimatedIconHandle>(null);
+
   if (item.kind === "custom") {
     return item.railTip ? (
       <RailTip label={item.label}>{item.rail}</RailTip>
@@ -531,11 +571,18 @@ function RailItem({ item }: { item: ConsoleItem }) {
   const { Icon } = item;
   return (
     <RailButton
-      onClick={item.onClick}
+      onClick={() => {
+        animRef.current?.startAnimation();
+        item.onClick();
+      }}
       label={item.railLabel ?? item.label}
       locked={item.locked}
     >
-      <Icon size={15} />
+      {item.animated ? (
+        <item.animated ref={animRef} size={15} animateOnHover={false} />
+      ) : (
+        <Icon size={15} />
+      )}
     </RailButton>
   );
 }
