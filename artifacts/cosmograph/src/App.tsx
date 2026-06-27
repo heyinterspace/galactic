@@ -229,6 +229,7 @@ function ClerkProviderWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
         <AppStateProvider>
+          <DocumentTitle />
           <EntitlementBridge />
           <ShipBridge />
           <Switch>
@@ -246,6 +247,19 @@ function ClerkProviderWithRoutes() {
       </QueryClientProvider>
     </ClerkProvider>
   );
+}
+
+// Keeps the browser tab title in sync with the active scientist, so a runtime
+// dataset swap relabels the tab too (e.g. "Cosmograph - Ada Lovelace"). No
+// hardcoded identity — the name comes only from the loaded snapshot.
+function DocumentTitle() {
+  const { activeAuthorLabel } = useAppState();
+  useEffect(() => {
+    document.title = activeAuthorLabel
+      ? `Cosmograph - ${activeAuthorLabel}`
+      : "Cosmograph";
+  }, [activeAuthorLabel]);
+  return null;
 }
 
 function App() {
