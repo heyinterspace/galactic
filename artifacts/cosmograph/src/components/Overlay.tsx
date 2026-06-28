@@ -14,7 +14,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { presence } from "@/lib/presence";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
-import { Github, Share2, Star } from "lucide-react";
+import { Github, Heart, Share2, Star } from "lucide-react";
 import { useGithubStars, formatStars } from "@/lib/useGithubStars";
 import { SITE } from "@/config/site";
 import { ShareModal } from "./ShareModal";
@@ -167,6 +167,18 @@ function HeaderActions() {
         right: isMobile ? "0px" : `calc(${desktopRight} + 0.5rem)`,
       }}
     >
+      <a
+        href={SITE.github.sponsors}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Sponsor this project"
+        className="pointer-events-auto flex h-9 items-center gap-2 border-2 border-edge bg-white/5 px-3 text-ink backdrop-blur-sm transition-colors hover:bg-white/10"
+      >
+        <Heart size={15} className="shrink-0 text-accent" />
+        <span className="font-display text-[11px] uppercase tracking-wider">
+          Sponsor
+        </span>
+      </a>
       <a
         href={url ?? SITE.github.url}
         target="_blank"
