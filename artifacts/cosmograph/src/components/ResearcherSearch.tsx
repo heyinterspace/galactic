@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Loader2, Telescope, Quote } from "lucide-react";
+import { Search, Loader2, Quote } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { searchAuthors, type AuthorCandidate } from "@/lib/openalex";
 
@@ -63,28 +63,8 @@ export function ResearcherSearch() {
   };
 
   return (
-    <div className="border-2 border-accent/50 bg-accent/5 p-5">
-      <div className="flex items-center gap-2.5">
-        <div className="grid h-9 w-9 shrink-0 place-items-center border-2 border-accent/60 bg-accent/10 text-accent">
-          <Telescope size={16} />
-        </div>
-        <div>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-accent">
-            Make it yours
-          </span>
-          <h3 className="text-lg font-title font-bold leading-tight tracking-tight text-ink">
-            Explore another researcher
-          </h3>
-        </div>
-      </div>
-
-      <p className="mt-3 text-[13px] leading-relaxed text-ink-dim">
-        Type any researcher's name — a parent, a mentor, a hero, or yourself — and
-        Cosmograph rebuilds the entire universe from their public record on{" "}
-        <span className="text-ink">OpenAlex</span>. No setup, nothing to install.
-      </p>
-
-      <div className="relative mt-4">
+    <div>
+      <div className="relative">
         <Search
           size={15}
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-dim"
