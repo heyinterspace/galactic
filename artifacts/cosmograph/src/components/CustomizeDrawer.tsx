@@ -36,9 +36,7 @@ export function CustomizeDrawer() {
         is a one-time premium unlock.
       </p>
 
-      <ResearcherSearch />
-
-      <div className="mt-7 border-t-2 border-edge pt-5">
+      <div className="mb-6 border-t-2 border-edge pt-5">
         <span className="font-mono text-[10px] uppercase tracking-widest text-accent">
           Everything membership unlocks · $7 / year
         </span>
@@ -57,6 +55,8 @@ export function CustomizeDrawer() {
           })}
         </ul>
       </div>
+
+      <ResearcherSearch />
     </Drawer>
   );
 }
