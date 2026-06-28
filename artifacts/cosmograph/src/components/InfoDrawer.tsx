@@ -33,7 +33,7 @@ export function InfoDrawer() {
               : "border-transparent text-ink-dim hover:text-ink"
           }`}
         >
-          Flight Log
+          Changelog
         </button>
       </div>
 
