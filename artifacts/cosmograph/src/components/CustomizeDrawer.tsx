@@ -31,9 +31,7 @@ export function CustomizeDrawer() {
         Cosmograph can map anyone with a public research record. Type any
         researcher's name below — a parent, a mentor, a hero, or yourself — and the
         entire universe rebuilds around their work from their public record on{" "}
-        <span className="text-ink">OpenAlex</span>. No setup, nothing to install.
-        Deep exploration of a custom researcher (Fly, Tour, and full paper details)
-        is a one-time premium unlock.
+        <span className="text-ink">OpenAlex</span>.
       </p>
 
       <div className="mb-6 border-t-2 border-edge pt-5">
