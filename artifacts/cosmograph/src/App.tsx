@@ -65,12 +65,16 @@ function GalaxyView() {
   // Reserve the Mission Control rail/console width on the RIGHT so the galaxy is
   // genuinely *pushed* into the remaining width — the canvas shrinks to fit the
   // open space instead of staying full-bleed and hiding planets under the panel.
-  // During the intro the console is hidden, so the canvas is full-bleed.
+  // During the intro the console is hidden, so the canvas is full-bleed. On mobile
+  // the console docks to the BOTTOM (not the right), so there's no right push —
+  // the galaxy stays full-width and the slim bottom bar floats over it.
   const rightInset = !introFinished
     ? "0px"
-    : consoleOpen
-      ? "min(12rem,80vw)"
-      : "3.5rem";
+    : isMobile
+      ? "0px"
+      : consoleOpen
+        ? "min(12rem,80vw)"
+        : "3.5rem";
   // When a detail panel is open it floats over the top-LEFT on desktop, so nudge
   // the framed (camera-centered) object to the right with a cheap GPU transform
   // so the panel can never occlude the planet/sun you just selected. Mobile shows

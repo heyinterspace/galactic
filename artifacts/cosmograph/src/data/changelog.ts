@@ -17,6 +17,18 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.19.0",
+    codename: "Thumb Reach",
+    date: "2026-06-28",
+    summary:
+      "On phones the console now lives along the bottom of the screen, so the galaxy gets the full width and the controls sit right under your thumb.",
+    changes: [
+      "On phones the Mission Control console moved from the right edge to the bottom of the screen — the galaxy now uses the full width.",
+      "Expanding the console on a phone slides a panel up from the bottom instead of in from the side.",
+      "Detail panels now span the full width above the bottom console so they're easier to read.",
+    ],
+  },
+  {
     version: "3.18.0",
     codename: "Pocket Cosmos",
     date: "2026-06-28",

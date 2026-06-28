@@ -10,6 +10,7 @@ import { AskDrawer } from "./AskDrawer";
 import { ChangelogDrawer } from "./ChangelogDrawer";
 import { CustomizeDrawer } from "./CustomizeDrawer";
 import { galaxyData } from "@/data/galaxy";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { presence } from "@/lib/presence";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { toast } from "sonner";
@@ -17,8 +18,9 @@ import { toast } from "sonner";
 const EMPTY_IDS: string[] = [];
 
 export function Overlay() {
-  const { introFinished, selectedObject, hoveredObject, tourActive } =
+  const { introFinished, selectedObject, hoveredObject, tourActive, consoleOpen } =
     useAppState();
+  const isMobile = useIsMobile();
 
   return (
     <div className="absolute inset-0 pointer-events-none z-10">
@@ -73,8 +75,8 @@ export function Overlay() {
               </AnimatePresence>
 
               <AnimatePresence>
-                {selectedObject && (
-                  <div className="absolute z-30 left-3 right-[4.5rem] bottom-20 max-h-[42vh] md:inset-x-auto md:right-auto md:bottom-auto md:top-36 md:left-5 md:w-[min(384px,calc(100vw-2.5rem))] md:max-h-[calc(100vh-15rem)] md:!block overflow-y-auto custom-scrollbar pointer-events-auto block">
+                {selectedObject && !(isMobile && consoleOpen) && (
+                  <div className="absolute z-30 left-3 right-3 bottom-[4.25rem] max-h-[42vh] md:inset-x-auto md:right-auto md:bottom-auto md:top-36 md:left-5 md:w-[min(384px,calc(100vw-2.5rem))] md:max-h-[calc(100vh-15rem)] md:!block overflow-y-auto custom-scrollbar pointer-events-auto block">
                     <DetailPanel />
                   </div>
                 )}

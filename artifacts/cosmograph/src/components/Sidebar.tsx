@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronDown,
+  ChevronUp,
   Heart,
   Lock,
   Github,
@@ -23,6 +24,7 @@ import {
 } from "lucide-react";
 import { HistoryIcon, RocketIcon, TelescopeIcon } from "lucide-animated";
 import { useAppState } from "@/lib/store";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { isFiltersActive } from "@/data/galaxy";
 import { SITE } from "@/config/site";
 import { ShareButton } from "./ShareButton";
@@ -138,6 +140,7 @@ export function Sidebar() {
   } = useAppState();
 
   const { openSections, toggleSection } = useSectionState();
+  const isMobile = useIsMobile();
 
   const filtersActive = isFiltersActive(filters);
 
@@ -284,19 +287,29 @@ export function Sidebar() {
   return (
     <TooltipProvider delayDuration={150} skipDelayDuration={400}>
       <div
-        className={`console-panel absolute right-0 top-0 z-30 flex h-full flex-col overflow-hidden transition-[width] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] ${
-          open ? "w-[min(12rem,80vw)]" : "w-14"
-        }`}
+        className={
+          isMobile
+            ? `console-panel absolute inset-x-0 bottom-0 z-30 flex w-full flex-col overflow-hidden transition-[height] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[height] ${
+                open ? "h-[min(70vh,30rem)]" : "h-14"
+              }`
+            : `console-panel absolute right-0 top-0 z-30 flex h-full flex-col overflow-hidden transition-[width] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[width] ${
+                open ? "w-[min(12rem,80vw)]" : "w-14"
+              }`
+        }
       >
         <AnimatePresence mode="wait" initial={false}>
           {open ? (
             <motion.div
               key="panel"
-              initial={{ opacity: 0, x: 8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
+              initial={isMobile ? { opacity: 0, y: 8 } : { opacity: 0, x: 8 }}
+              animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, x: 0 }}
+              exit={isMobile ? { opacity: 0, y: 8 } : { opacity: 0, x: 8 }}
               transition={{ duration: 0.14 }}
-              className="flex h-full w-[min(12rem,80vw)] shrink-0 flex-col overflow-hidden"
+              className={
+                isMobile
+                  ? "flex h-full w-full shrink-0 flex-col overflow-hidden"
+                  : "flex h-full w-[min(12rem,80vw)] shrink-0 flex-col overflow-hidden"
+              }
             >
               {/* Header */}
               <div className="flex shrink-0 items-center justify-between gap-2 border-b-2 border-edge px-3 py-2">
@@ -309,7 +322,7 @@ export function Sidebar() {
                   aria-label="Collapse console"
                   className="flex h-7 w-7 items-center justify-center border-2 border-edge bg-white/5 text-ink-dim transition-colors hover:bg-white/10 hover:text-ink"
                 >
-                  <ChevronRight size={15} />
+                  {isMobile ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                 </button>
               </div>
 
@@ -322,16 +335,28 @@ export function Sidebar() {
           ) : (
             <motion.div
               key="rail"
-              initial={{ opacity: 0, x: 8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 8 }}
+              initial={isMobile ? { opacity: 0, y: 8 } : { opacity: 0, x: 8 }}
+              animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, x: 0 }}
+              exit={isMobile ? { opacity: 0, y: 8 } : { opacity: 0, x: 8 }}
               transition={{ duration: 0.14 }}
-              className="flex h-full w-14 shrink-0 flex-col overflow-hidden"
+              className={
+                isMobile
+                  ? "flex h-14 w-full shrink-0 flex-row items-stretch overflow-hidden"
+                  : "flex h-full w-14 shrink-0 flex-col overflow-hidden"
+              }
             >
-              {/* Header — mirrors the expanded console header: same height, bottom
-                border, and a same-size toggle button so the collapse/expand
-                control stays in place when the panel opens and closes. */}
-              <div className="flex shrink-0 items-center justify-center border-b-2 border-edge px-3 py-2">
+              {/* Header — mirrors the expanded console header: same size and a
+                same-size toggle button so the collapse/expand control stays in
+                place when the panel opens and closes. On mobile the console docks
+                to the bottom, so the rail runs horizontally and the expand control
+                sits on the leading (left) edge instead of the top. */}
+              <div
+                className={
+                  isMobile
+                    ? "flex shrink-0 items-center justify-center border-r-2 border-edge px-3"
+                    : "flex shrink-0 items-center justify-center border-b-2 border-edge px-3 py-2"
+                }
+              >
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
@@ -340,14 +365,14 @@ export function Sidebar() {
                       aria-label="Expand console"
                       className="flex h-7 w-7 items-center justify-center border-2 border-edge bg-white/5 text-ink-dim transition-colors hover:bg-white/10 hover:text-ink"
                     >
-                      <ChevronLeft size={15} />
+                      {isMobile ? <ChevronUp size={15} /> : <ChevronLeft size={15} />}
                     </button>
                   </TooltipTrigger>
                   <RailTipContent>Expand console</RailTipContent>
                 </Tooltip>
               </div>
 
-              <RailBody sections={sections} />
+              <RailBody sections={sections} horizontal={isMobile} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -367,7 +392,7 @@ function ConsoleBody({
   toggleSection: (key: SectionKey) => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 overflow-y-auto custom-scrollbar p-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto custom-scrollbar p-3">
       {sections.map((section) =>
         section.chrome ? (
           <CollapsibleSection
@@ -397,10 +422,22 @@ function ConsoleBody({
 }
 
 /** Collapsed rail body: neutral icon shortcuts, dividers between groups. */
-function RailBody({ sections }: { sections: ConsoleSection[] }) {
+function RailBody({
+  sections,
+  horizontal = false,
+}: {
+  sections: ConsoleSection[];
+  horizontal?: boolean;
+}) {
   let firstChromeSeen = false;
   return (
-    <div className="flex flex-col items-center gap-1 overflow-y-auto custom-scrollbar p-1.5">
+    <div
+      className={
+        horizontal
+          ? "flex min-w-0 flex-1 flex-row items-center gap-1 overflow-x-auto custom-scrollbar px-1.5"
+          : "flex flex-col items-center gap-1 overflow-y-auto custom-scrollbar p-1.5"
+      }
+    >
       {sections.map((section) => {
         let divider = false;
         if (section.chrome) {
@@ -409,7 +446,7 @@ function RailBody({ sections }: { sections: ConsoleSection[] }) {
         }
         return (
           <Fragment key={section.id}>
-            {divider && <Divider />}
+            {divider && <Divider horizontal={horizontal} />}
             {section.items.map((item) => (
               <RailItem key={item.id} item={item} />
             ))}
@@ -885,6 +922,12 @@ function RailButton({
   );
 }
 
-function Divider() {
-  return <div className="my-0.5 h-px w-6 bg-edge/60" />;
+function Divider({ horizontal = false }: { horizontal?: boolean }) {
+  return (
+    <div
+      className={
+        horizontal ? "mx-0.5 h-6 w-px bg-edge/60" : "my-0.5 h-px w-6 bg-edge/60"
+      }
+    />
+  );
 }

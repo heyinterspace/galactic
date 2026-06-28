@@ -16,3 +16,4 @@
 - [Poly Pizza GLB download](poly-pizza-glb.md) — page id ≠ file id; `static.poly.pizza/<page-id>.glb` is AccessDenied; scrape the page for the real UUID CDN url, verify `glTF` magic bytes.
 - [Iframe auth handoff](iframe-auth-handoff.md) — Clerk OAuth+bot-challenge split is an iframe-preview artifact; in-frame auth pages show a "open in new window" handoff, real widget renders top-level/prod.
 - [Cosmonaut presence ships](cosmonaut-ships.md) — peers + self are low-poly ships; ship look = a seed now broadcast over presence + saved to users.ship_seed (/me/ship); hydrate saved seed once per sign-in.
+- [Mobile console dock](mobile-console-dock.md) — on mobile the console docks bottom (sheet), desktop stays right rail; no right-push on mobile, detail panel hides while console open, footer hidden, useIsMobile inits synchronously.
