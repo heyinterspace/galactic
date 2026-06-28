@@ -334,14 +334,22 @@ function CameraToggle() {
   const { cameraMode, setCameraMode, canExplore } = useAppState();
   const isFly = cameraMode === "spaceship";
   return (
-    <div className="flex w-full overflow-hidden border-2 border-edge">
+    <div className="relative flex w-full overflow-hidden border-2 border-edge bg-white/5 backdrop-blur-sm">
+      {/* Sliding glass thumb — a single accent pane that travels between the two
+          halves, so switching modes reads as one moving surface rather than two
+          buttons swapping fills (Structured Liquidity, sharp 90° corners). */}
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 left-0 z-0 w-1/2 border border-accent/45 bg-accent/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_0_14px_rgba(163,136,238,0.4)] backdrop-blur-md"
+        initial={false}
+        animate={{ x: isFly ? "100%" : "0%" }}
+        transition={{ type: "spring", stiffness: 460, damping: 38, mass: 0.7 }}
+      />
       <button
         onClick={() => setCameraMode("god")}
         aria-pressed={!isFly}
-        className={`flex h-9 flex-1 items-center justify-center gap-2 transition-colors ${
-          !isFly
-            ? "bg-accent/20 text-ink"
-            : "bg-white/5 text-ink-dim hover:bg-white/10"
+        className={`relative z-10 flex h-9 flex-1 items-center justify-center gap-2 transition-colors ${
+          !isFly ? "text-ink" : "text-ink-dim hover:text-ink"
         }`}
       >
         <Orbit size={14} className="shrink-0" />
@@ -352,10 +360,8 @@ function CameraToggle() {
       <button
         onClick={() => setCameraMode("spaceship")}
         aria-pressed={isFly}
-        className={`flex h-9 flex-1 items-center justify-center gap-2 border-l-2 border-edge transition-colors ${
-          isFly
-            ? "bg-accent/20 text-ink"
-            : "bg-white/5 text-ink-dim hover:bg-white/10"
+        className={`relative z-10 flex h-9 flex-1 items-center justify-center gap-2 transition-colors ${
+          isFly ? "text-ink" : "text-ink-dim hover:text-ink"
         }`}
       >
         {canExplore ? (
