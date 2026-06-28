@@ -83,7 +83,7 @@ export function EngagePrompt() {
                 className={ACTION}
               >
                 <Heart size={13} className="shrink-0 text-accent" />
-                <span>Support with a sponsorship</span>
+                <span>Sponsor Us</span>
               </a>
               <a
                 href={SITE.github.url}
