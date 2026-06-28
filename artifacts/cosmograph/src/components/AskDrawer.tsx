@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useMemo, useRef, useState } from "react";
 import {
   X,
   Sparkles,
@@ -9,6 +8,7 @@ import {
   Lightbulb,
   ExternalLink,
 } from "lucide-react";
+import { Drawer } from "./Drawer";
 import { useTranslateAsk, useReportFeedback } from "@workspace/api-client-react";
 import { useAppState } from "@/lib/store";
 import {
@@ -22,12 +22,8 @@ import { getDomainColorStr } from "@/lib/colors";
 import { MessageCircleStar } from "./MessageCircleStar";
 
 export function AskDrawer() {
-  const { askOpen, setAskOpen, consoleOpen, setCameraMode, setSelectedObject } =
+  const { askOpen, setAskOpen, setCameraMode, setSelectedObject } =
     useAppState();
-  // Sit to the LEFT of the right-hand Mission Control instead of under it: offset
-  // by the live console width (expanded vs collapsed rail) and cap our own width
-  // so we never overflow the remaining space.
-  const consoleW = consoleOpen ? "min(14rem,80vw)" : "3.5rem";
 
   // Built from live galaxyData at mount; the whole Overlay remounts on a dataset
   // swap (key={datasetVersion}), so this stays in sync with the active scientist.
@@ -48,68 +44,29 @@ export function AskDrawer() {
     setSelectedObject({ type: "planet", id });
   };
 
-  useEffect(() => {
-    if (!askOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setAskOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [askOpen, setAskOpen]);
-
   return (
-    <AnimatePresence>
-      {askOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 pointer-events-auto"
-        >
-          <div
-            className="absolute inset-0 bg-black/65 backdrop-blur-sm"
-            onClick={() => setAskOpen(false)}
-          />
-          <motion.aside
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="ask-drawer-title"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 320, damping: 34 }}
-            style={{ ["--console-w" as string]: consoleW }}
-            className="custom-scrollbar absolute inset-0 flex flex-col overflow-y-auto border-l-2 border-edge bg-bg/95 p-7 backdrop-blur-xl sm:left-auto sm:right-[var(--console-w)] sm:w-[min(34rem,calc(100vw-var(--console-w)-0.5rem))]"
-          >
-            <button
-              onClick={() => setAskOpen(false)}
-              aria-label="Close"
-              autoFocus
-              className="absolute top-4 right-4 text-ink-dim transition-colors hover:text-ink"
-            >
-              <X size={18} />
-            </button>
+    <Drawer
+      open={askOpen}
+      onClose={() => setAskOpen(false)}
+      labelledBy="ask-drawer-title"
+    >
+      <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-accent">
+        <MessageCircleStar size={12} /> Ask Cosmos
+      </span>
+      <h2
+        id="ask-drawer-title"
+        className="mt-1 mb-2 text-2xl font-title font-bold tracking-tight text-ink"
+      >
+        Ask anything about this work
+      </h2>
+      <p className="mb-6 text-[13px] leading-relaxed text-ink-dim">
+        Ask a natural-language question and matching papers light up across the
+        galaxy. Answers are computed from the data, never invented — you can also
+        report a bug or request a feature right here.
+      </p>
 
-            <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-accent">
-              <MessageCircleStar size={12} /> Ask Cosmos
-            </span>
-            <h2
-              id="ask-drawer-title"
-              className="mt-1 mb-2 text-2xl font-title font-bold tracking-tight text-ink"
-            >
-              Ask anything about this work
-            </h2>
-            <p className="mb-6 text-[13px] leading-relaxed text-ink-dim">
-              Ask a natural-language question and matching papers light up across the
-              galaxy. Answers are computed from the data, never invented — you can also
-              report a bug or request a feature right here.
-            </p>
-
-            <AskPanel domainIndexById={domainIndexById} onPickPaper={pickPaper} />
-          </motion.aside>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      <AskPanel domainIndexById={domainIndexById} onPickPaper={pickPaper} />
+    </Drawer>
   );
 }
 

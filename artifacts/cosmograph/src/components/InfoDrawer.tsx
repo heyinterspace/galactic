@@ -1,67 +1,44 @@
-import { useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
 import { useAppState } from "@/lib/store";
 import { galaxyData } from "@/data/galaxy";
 import { SITE } from "@/config/site";
 import { LEGEND, NAV_MODES } from "@/lib/legend";
+import { Drawer } from "./Drawer";
+import { ChangelogContent } from "./ChangelogContent";
 
 export function InfoDrawer() {
-  const { infoOpen, setInfoOpen, setChangelogOpen, consoleOpen } = useAppState();
-  // Sit to the LEFT of the right-hand Mission Control instead of under it: offset
-  // by the live console width (expanded vs collapsed rail) and cap our own width
-  // so we never overflow the remaining space.
-  const consoleW = consoleOpen ? "min(14rem,80vw)" : "3.5rem";
-
-  const openChangelog = () => {
-    setInfoOpen(false);
-    setChangelogOpen(true);
-  };
-
-  useEffect(() => {
-    if (!infoOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setInfoOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [infoOpen, setInfoOpen]);
+  const { infoOpen, setInfoOpen, infoTab, setInfoTab } = useAppState();
 
   return (
-    <AnimatePresence>
-      {infoOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 pointer-events-auto"
+    <Drawer
+      open={infoOpen}
+      onClose={() => setInfoOpen(false)}
+      labelledBy="info-drawer-title"
+    >
+      <div className="mb-5 flex gap-1.5 border-b-2 border-edge pr-8">
+        <button
+          onClick={() => setInfoTab("about")}
+          className={`-mb-0.5 border-b-2 px-1 pb-2 font-display text-[11px] uppercase tracking-wider transition-colors ${
+            infoTab === "about"
+              ? "border-accent text-ink"
+              : "border-transparent text-ink-dim hover:text-ink"
+          }`}
         >
-          <div
-            className="absolute inset-0 bg-black/65 backdrop-blur-sm"
-            onClick={() => setInfoOpen(false)}
-          />
-          <motion.aside
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="info-drawer-title"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 320, damping: 34 }}
-            style={{
-              right: consoleW,
-              width: `min(34rem, calc(100vw - ${consoleW} - 0.5rem))`,
-            }}
-            className="custom-scrollbar absolute top-0 bottom-0 overflow-y-auto border-l-2 border-edge bg-bg/95 p-7 backdrop-blur-xl"
-          >
-            <button
-              onClick={() => setInfoOpen(false)}
-              aria-label="Close"
-              autoFocus
-              className="absolute top-4 right-4 text-ink-dim transition-colors hover:text-ink"
-            >
-              <X size={18} />
-            </button>
+          About
+        </button>
+        <button
+          onClick={() => setInfoTab("log")}
+          className={`-mb-0.5 border-b-2 px-1 pb-2 font-display text-[11px] uppercase tracking-wider transition-colors ${
+            infoTab === "log"
+              ? "border-accent text-ink"
+              : "border-transparent text-ink-dim hover:text-ink"
+          }`}
+        >
+          Flight Log
+        </button>
+      </div>
+
+      {infoTab === "about" ? (
+        <div>
 
             <span className="font-mono text-[10px] uppercase tracking-widest text-accent">
               About this Venture
@@ -205,7 +182,7 @@ export function InfoDrawer() {
             <p className="mt-4 font-mono text-[10px] leading-relaxed text-ink-dim/70">
               © 2026{" "}
               <button
-                onClick={openChangelog}
+                onClick={() => setInfoTab("log")}
                 title="View the flight log"
                 className="text-accent underline-offset-2 transition-colors hover:underline"
               >
@@ -231,9 +208,10 @@ export function InfoDrawer() {
               </a>
               .
             </p>
-          </motion.aside>
-        </motion.div>
+        </div>
+      ) : (
+        <ChangelogContent titleId="info-drawer-title" />
       )}
-    </AnimatePresence>
+    </Drawer>
   );
 }

@@ -3,11 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Info,
   Orbit,
-  History,
-  Rewind,
   Map,
   Navigation,
-  Share2,
   ChevronRight,
   ChevronLeft,
   ChevronDown,
@@ -22,13 +19,11 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { HistoryIcon, RocketIcon, TelescopeIcon } from "lucide-animated";
+import { TelescopeIcon } from "lucide-animated";
 import { useAppState } from "@/lib/store";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { isFiltersActive } from "@/data/galaxy";
 import { SITE } from "@/config/site";
-import { ShareButton } from "./ShareButton";
-import { GitHubLink } from "./GitHubLink";
 import { AccountIndicator, AccountIndicatorRail } from "./AccountIndicator";
 import { MessageCircleStar } from "./MessageCircleStar";
 import {
@@ -121,18 +116,14 @@ type ConsoleSection = {
 
 export function Sidebar() {
   const {
-    setCameraMode,
-    cameraMode,
     filters,
     setInfoOpen,
     infoOpen,
+    setInfoTab,
     setAskOpen,
     askOpen,
-    setChangelogOpen,
-    changelogOpen,
     setCustomizeOpen,
     customizeOpen,
-    replayIntro,
     startTour,
     canExplore,
     consoleOpen: open,
@@ -170,17 +161,11 @@ export function Sidebar() {
           id: "info",
           label: "Info",
           Icon: Info,
-          onClick: () => setInfoOpen(true),
+          onClick: () => {
+            setInfoTab("about");
+            setInfoOpen(true);
+          },
           open: infoOpen,
-        },
-        {
-          kind: "action",
-          id: "changelog",
-          label: "Changelog",
-          Icon: History,
-          animated: HistoryIcon,
-          onClick: () => setChangelogOpen(true),
-          open: changelogOpen,
         },
         {
           kind: "action",
@@ -218,52 +203,18 @@ export function Sidebar() {
       ],
     },
     {
-      id: "share",
-      title: "Share",
-      icon: <Share2 size={15} />,
-      chrome: true,
-      items: [
-        {
-          kind: "custom",
-          id: "github",
-          label: "GitHub",
-          expanded: <GitHubLink full />,
-          rail: <GitHubLink compact />,
-          railTip: true,
-        },
-        {
-          kind: "custom",
-          id: "share",
-          label: "Share",
-          expanded: <ShareButton full />,
-          rail: <ShareButton />,
-          railTip: true,
-        },
-      ],
-    },
-    {
       id: "navigate",
       title: "Navigate",
       icon: <Navigation size={15} />,
       chrome: true,
       items: [
         {
-          kind: "action",
-          id: "orbit",
-          label: "Orbit",
-          Icon: Orbit,
-          onClick: () => setCameraMode("god"),
-          active: cameraMode === "god",
-        },
-        {
-          kind: "action",
-          id: "fly",
-          label: "Fly",
-          Icon: Rocket,
-          animated: RocketIcon,
-          onClick: () => setCameraMode("spaceship"),
-          active: cameraMode === "spaceship",
-          locked: !canExplore,
+          kind: "custom",
+          id: "camera",
+          label: "Orbit / Fly",
+          expanded: <CameraToggle />,
+          rail: <CameraToggleRail />,
+          railTip: true,
         },
         {
           kind: "action",
@@ -272,13 +223,6 @@ export function Sidebar() {
           Icon: Map,
           onClick: startTour,
           locked: !canExplore,
-        },
-        {
-          kind: "action",
-          id: "replay",
-          label: "Re-intro",
-          Icon: Rewind,
-          onClick: replayIntro,
         },
       ],
     },
@@ -381,6 +325,74 @@ export function Sidebar() {
   );
 }
 
+/**
+ * Orbit/Fly as a single two-sided toggle. Expanded: a segmented control with
+ * equal-width Orbit and Fly halves (Fly shows a lock until unlocked). The store's
+ * setCameraMode gates Fly behind the paywall, so tapping a locked Fly opens it.
+ */
+function CameraToggle() {
+  const { cameraMode, setCameraMode, canExplore } = useAppState();
+  const isFly = cameraMode === "spaceship";
+  return (
+    <div className="flex w-full overflow-hidden border-2 border-edge">
+      <button
+        onClick={() => setCameraMode("god")}
+        aria-pressed={!isFly}
+        className={`flex h-9 flex-1 items-center justify-center gap-2 transition-colors ${
+          !isFly
+            ? "bg-accent/20 text-ink"
+            : "bg-white/5 text-ink-dim hover:bg-white/10"
+        }`}
+      >
+        <Orbit size={14} className="shrink-0" />
+        <span className="font-display text-[11px] uppercase tracking-wider">
+          Orbit
+        </span>
+      </button>
+      <button
+        onClick={() => setCameraMode("spaceship")}
+        aria-pressed={isFly}
+        className={`flex h-9 flex-1 items-center justify-center gap-2 border-l-2 border-edge transition-colors ${
+          isFly
+            ? "bg-accent/20 text-ink"
+            : "bg-white/5 text-ink-dim hover:bg-white/10"
+        }`}
+      >
+        {canExplore ? (
+          <Rocket size={14} className="shrink-0" />
+        ) : (
+          <Lock size={12} className="shrink-0 text-accent" />
+        )}
+        <span className="font-display text-[11px] uppercase tracking-wider">
+          Fly
+        </span>
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Collapsed-rail form of the camera toggle: a single neutral icon button (same
+ * footprint as the other rail items) showing the current mode; tapping flips to
+ * the other mode. A small lock marks Fly while it's still gated.
+ */
+function CameraToggleRail() {
+  const { cameraMode, setCameraMode, canExplore } = useAppState();
+  const isFly = cameraMode === "spaceship";
+  return (
+    <button
+      onClick={() => setCameraMode(isFly ? "god" : "spaceship")}
+      aria-label={isFly ? "Switch to Orbit view" : "Switch to Fly view"}
+      className="relative flex h-9 w-9 items-center justify-center border-2 border-edge bg-white/5 text-ink transition-colors hover:bg-white/10"
+    >
+      {isFly ? <Rocket size={15} /> : <Orbit size={15} />}
+      {!canExplore && (
+        <Lock size={10} className="absolute -right-1 -top-1 text-accent" />
+      )}
+    </button>
+  );
+}
+
 /** Expanded panel body: section chrome + full-width labelled controls. */
 function ConsoleBody({
   sections,
@@ -448,7 +460,7 @@ function RailBody({
           <Fragment key={section.id}>
             {divider && <Divider horizontal={horizontal} />}
             {section.items.map((item) => (
-              <RailItem key={item.id} item={item} />
+              <RailItem key={item.id} item={item} horizontal={horizontal} />
             ))}
           </Fragment>
         );
@@ -605,22 +617,27 @@ function OpenDot() {
  * One item rendered for the collapsed rail. Neutral by design: no active
  * fills, accent CTAs, or badges — only the gated-item lock from RailButton.
  */
-function RailItem({ item }: { item: ConsoleItem }) {
+function RailItem({
+  item,
+  horizontal = false,
+}: {
+  item: ConsoleItem;
+  horizontal?: boolean;
+}) {
   // Ref to an optional animated icon (declared before any early return to keep
   // hook order stable); a rail click replays the animation.
   const animRef = useRef<AnimatedIconHandle>(null);
 
+  let control: React.ReactNode;
   if (item.kind === "custom") {
-    return item.railTip ? (
+    control = item.railTip ? (
       <RailTip label={item.label}>{item.rail}</RailTip>
     ) : (
       <>{item.rail}</>
     );
-  }
-
-  if (item.kind === "link") {
+  } else if (item.kind === "link") {
     const { Icon } = item;
-    return (
+    control = (
       <RailTip label={item.railLabel ?? item.label}>
         <a
           href={item.href}
@@ -633,27 +650,43 @@ function RailItem({ item }: { item: ConsoleItem }) {
         </a>
       </RailTip>
     );
+  } else {
+    // action — neutral in the collapsed rail except for an "open panel" dot, so
+    // you can still tell which drawer is open while the console is collapsed.
+    const { Icon } = item;
+    control = (
+      <RailButton
+        open={item.open}
+        onClick={() => {
+          animRef.current?.startAnimation();
+          item.onClick();
+        }}
+        label={item.railLabel ?? item.label}
+        locked={item.locked}
+      >
+        {item.animated ? (
+          <item.animated ref={animRef} size={15} animateOnHover />
+        ) : (
+          <Icon size={15} />
+        )}
+      </RailButton>
+    );
   }
 
-  // action — neutral in the collapsed rail except for an "open panel" dot, so
-  // you can still tell which drawer is open while the console is collapsed.
-  const { Icon } = item;
+  // On mobile the rail docks to the bottom as a horizontal bar; hover tooltips
+  // are useless on touch, so each item gets a small persistent caption beneath
+  // its icon (classic bottom-nav). Desktop keeps the icon-only vertical rail.
+  if (!horizontal) return control;
+
+  const labelText =
+    item.kind === "custom" ? item.label : item.railLabel ?? item.label;
   return (
-    <RailButton
-      open={item.open}
-      onClick={() => {
-        animRef.current?.startAnimation();
-        item.onClick();
-      }}
-      label={item.railLabel ?? item.label}
-      locked={item.locked}
-    >
-      {item.animated ? (
-        <item.animated ref={animRef} size={15} animateOnHover />
-      ) : (
-        <Icon size={15} />
-      )}
-    </RailButton>
+    <div className="flex shrink-0 flex-col items-center justify-center gap-0.5">
+      {control}
+      <span className="max-w-[3.75rem] truncate font-display text-[8px] uppercase leading-none tracking-wide text-ink-dim">
+        {labelText}
+      </span>
+    </div>
   );
 }
 

@@ -104,8 +104,8 @@ interface AppState {
   setInfoOpen: (val: boolean) => void;
   askOpen: boolean;
   setAskOpen: (val: boolean) => void;
-  changelogOpen: boolean;
-  setChangelogOpen: (val: boolean) => void;
+  infoTab: "about" | "log";
+  setInfoTab: (tab: "about" | "log") => void;
   customizeOpen: boolean;
   setCustomizeOpen: (val: boolean) => void;
   // Right-hand "Mission Control" expanded vs collapsed-to-rail. Lifted to the store
@@ -191,7 +191,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setIntroFinishedState(false);
     setConsoleOpen(false);
     setInfoOpen(false);
-    setChangelogOpen(false);
     setCustomizeOpen(false);
   }, []);
 
@@ -202,7 +201,6 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setIntroFinishedState(false);
     setConsoleOpen(false);
     setInfoOpen(false);
-    setChangelogOpen(false);
     setCustomizeOpen(false);
   }, []);
   const [cameraMode, setCameraModeState] = useState<CameraMode>("god");
@@ -251,8 +249,33 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [tourStopIndex, setTourStopIndex] = useState(0);
   const [infoOpen, setInfoOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
-  const [changelogOpen, setChangelogOpen] = useState(false);
+  const [infoTab, setInfoTab] = useState<"about" | "log">("about");
   const [customizeOpen, setCustomizeOpen] = useState(false);
+
+  // Drawers (info / ask / customize) are mutually exclusive: opening any one
+  // closes the others so only a single panel is ever open at a time. The
+  // exclusive setters below replace the raw useState setters in the context value
+  // (the raw ones stay for internal "close all" use in replay/forget intro).
+  const openDrawer = useCallback(
+    (target: "info" | "ask" | "customize" | null) => {
+      setInfoOpen(target === "info");
+      setAskOpen(target === "ask");
+      setCustomizeOpen(target === "customize");
+    },
+    [],
+  );
+  const setInfoOpenExclusive = useCallback(
+    (v: boolean) => openDrawer(v ? "info" : null),
+    [openDrawer],
+  );
+  const setAskOpenExclusive = useCallback(
+    (v: boolean) => openDrawer(v ? "ask" : null),
+    [openDrawer],
+  );
+  const setCustomizeOpenExclusive = useCallback(
+    (v: boolean) => openDrawer(v ? "customize" : null),
+    [openDrawer],
+  );
 
   // Entitlement: membership (entitled) + the set of researchers this account has
   // unlocked. Mirrored into refs so the gated handlers below read current values
@@ -451,13 +474,13 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         paywallOpen,
         setPaywallOpen,
         infoOpen,
-        setInfoOpen,
+        setInfoOpen: setInfoOpenExclusive,
         askOpen,
-        setAskOpen,
-        changelogOpen,
-        setChangelogOpen,
+        setAskOpen: setAskOpenExclusive,
+        infoTab,
+        setInfoTab,
         customizeOpen,
-        setCustomizeOpen,
+        setCustomizeOpen: setCustomizeOpenExclusive,
         consoleOpen,
         setConsoleOpen,
         datasetVersion,

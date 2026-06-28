@@ -7,13 +7,16 @@ import { FlyHud } from "./FlyHud";
 import { Footer } from "./Footer";
 import { InfoDrawer } from "./InfoDrawer";
 import { AskDrawer } from "./AskDrawer";
-import { ChangelogDrawer } from "./ChangelogDrawer";
 import { CustomizeDrawer } from "./CustomizeDrawer";
 import { galaxyData } from "@/data/galaxy";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { presence } from "@/lib/presence";
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
+import { Github, Share2, Star } from "lucide-react";
+import { useGithubStars, formatStars } from "@/lib/useGithubStars";
+import { SITE } from "@/config/site";
+import { ShareModal } from "./ShareModal";
 
 const EMPTY_IDS: string[] = [];
 
@@ -33,6 +36,7 @@ export function Overlay() {
           {!tourActive && (
             <>
               <Header />
+              <HeaderActions />
 
               <AnimatePresence>
                 {hoveredObject && (
@@ -89,7 +93,6 @@ export function Overlay() {
           <TourOverlay />
           <InfoDrawer />
           <AskDrawer />
-          <ChangelogDrawer />
           <CustomizeDrawer />
         </>
       )}
@@ -138,6 +141,54 @@ function Header() {
         />
       </div>
       <LivePresence />
+    </div>
+  );
+}
+
+// GitHub + Share pulled out of the console into two standalone buttons pinned
+// top-right. On mobile the console docks to the bottom so the top-right is free
+// (right-0); on desktop the console occupies the right edge, so these slide left
+// of it by the live console width and stay clear of the panel.
+function HeaderActions() {
+  const { consoleOpen } = useAppState();
+  const isMobile = useIsMobile();
+  const [shareOpen, setShareOpen] = useState(false);
+  const { stars, url } = useGithubStars();
+  const desktopRight = consoleOpen ? "min(12rem, 80vw)" : "3.5rem";
+  return (
+    <div
+      className="absolute top-0 right-0 z-20 flex items-center gap-2 p-3 transition-[right] duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+      style={{ right: isMobile ? "0px" : `calc(${desktopRight} + 0.5rem)` }}
+    >
+      <a
+        href={url ?? SITE.github.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="View source on GitHub"
+        className="pointer-events-auto flex h-9 items-center gap-2 border-2 border-edge bg-white/5 px-3 text-ink backdrop-blur-sm transition-colors hover:bg-white/10"
+      >
+        <Github size={15} className="shrink-0" />
+        <span className="font-display text-[11px] uppercase tracking-wider">
+          GitHub
+        </span>
+        {stars !== null && (
+          <span className="inline-flex items-center gap-0.5 font-mono text-[11px] text-accent">
+            <Star size={11} className="fill-current" />
+            {formatStars(stars)}
+          </span>
+        )}
+      </a>
+      <button
+        onClick={() => setShareOpen(true)}
+        aria-label="Share this Cosmograph"
+        className="pointer-events-auto flex h-9 items-center gap-2 border-2 border-edge bg-white/5 px-3 text-ink backdrop-blur-sm transition-colors hover:bg-white/10"
+      >
+        <Share2 size={15} className="shrink-0" />
+        <span className="font-display text-[11px] uppercase tracking-wider">
+          Share
+        </span>
+      </button>
+      <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} />
     </div>
   );
 }

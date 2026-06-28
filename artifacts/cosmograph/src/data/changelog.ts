@@ -17,6 +17,20 @@ export interface ChangelogEntry {
  */
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: "3.20.0",
+    codename: "Clean Console",
+    date: "2026-06-28",
+    summary:
+      "A tidier cockpit: fewer buttons, panels that open one at a time, and quick Share and GitHub controls pinned to the top-right corner.",
+    changes: [
+      "The flight log moved inside the Info panel as a tab, so it's one less button on the console.",
+      "Orbit and Fly are now a single toggle instead of two separate buttons, and the old Re-Intro button is gone.",
+      "Detail panels now open one at a time at the same width — opening one closes the others so they never stack up.",
+      "Share and the GitHub link now sit as quick buttons in the top-right corner instead of being buried in the console.",
+      "On phones the bottom console now shows a short text label under each icon, so it's clear what every button does.",
+    ],
+  },
+  {
     version: "3.19.0",
     codename: "Thumb Reach",
     date: "2026-06-28",

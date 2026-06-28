@@ -2,7 +2,7 @@ import { SITE } from "@/config/site";
 import { useAppState } from "@/lib/store";
 
 export function Footer() {
-  const { setChangelogOpen } = useAppState();
+  const { setInfoOpen, setInfoTab } = useAppState();
 
   return (
     <footer className="absolute inset-x-0 bottom-0 z-20 hidden md:flex flex-col items-center gap-1 px-4 pb-1.5 pt-1 pointer-events-none">
@@ -10,7 +10,10 @@ export function Footer() {
         <span>
           © 2026{" "}
           <button
-            onClick={() => setChangelogOpen(true)}
+            onClick={() => {
+              setInfoTab("log");
+              setInfoOpen(true);
+            }}
             title="View the flight log"
             className="pointer-events-auto text-accent underline-offset-2 transition-colors hover:underline"
           >
